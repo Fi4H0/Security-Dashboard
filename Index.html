@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taftalidze Guard Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 500px; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); box-sizing: border-box; }
+        .log-item { background: #334155; padding: 14px; margin: 10px 0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #ef4444; }
+        .hidden { display: none !important; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #475569; background: #1e293b; color: white; box-sizing: border-box; font-size: 16px; }
+        input:focus { outline: 2px solid #3b82f6; }
+        button { background: #3b82f6; color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #2563eb; }
+        h1 { color: #38bdf8; text-align: center; margin-top: 0; font-size: 24px; }
+        .status-dot { display: inline-block; width: 8px; height: 8px; background: #4ade80; border-radius: 50%; margin-right: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="login-form">
+        <h1>System Login</h1>
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Access Console</button>
+    </div>
+
+    <div id="dashboard" class="hidden">
+        <h1>Taftalidze Security Monitor</h1>
+        <div style="text-align: center; color: #4ade80; font-size: 14px; margin-bottom: 20px;">
+            <span class="status-dot"></span>Live Connection Active
+        </div>
+        <hr style="border: 0; border-top: 1px solid #334155; margin-bottom: 20px;">
+        <h3 style="margin-bottom: 10px;">Recent Alerts:</h3>
+        <div id="log-container">Connecting to data stream...</div>
+        <button onclick="logout()" style="background: #475569; margin-top: 25px;">Lock Console</button>
+    </div>
+</div>
+
+<script>
+    // Paste your exact credentials here
+    const SUPABASE_URL = https://nlnininesnenehyoshjw.supabase.co/rest/v1/;
+    const SUPABASE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sbmluaW5lc25lbmVoeW9zaGp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAwMjUsImV4cCI6MjA5NzQyNjAyNX0.01yLEIL2-IoOV401Tw_7f5jEvoUocTOguQSPYazxVGk;
+    
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Run automatically on page load to check if user is already logged in
+    window.onload = async () => {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) { showDashboard(); }
+    };
+
+    async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+        if (error) { alert("Access Denied: " + error.message); } 
+        else { showDashboard(); }
+    }
+
+    function showDashboard() {
+        document.getElementById('login-form').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        fetchLogs();
+        subscribeToLiveUpdates();
+    }
+
+    async function fetchLogs() {
+        const { data, error } = await _supabase
+            .from('logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10);
+            
+        if (!error) { renderLogs(data); }
+        else { document.getElementById('log-container').innerText = "Error loading logs."; }
+    }
+
+    function renderLogs(logs) {
+        const container = document.getElementById('log-container');
+        if(logs.length === 0) { container.innerHTML = "<p style='color:#94a3b8; text-align:center;'>No intrusion history detected.</p>"; return; }
+        
+        container.innerHTML = logs.map(log => `
+            <div class="log-item">
+                <span>⚠️ ${log.status}</span>
+                <span style="color: #94a3b8; font-size: 14px;">${new Date(log.created_at).toLocaleString()}</span>
+            </div>
+        `).join('');
+    }
+
+    function subscribeToLiveUpdates() {
+        _supabase.channel('schema-db-changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'logs' }, payload => {
+            fetchLogs(); // Instantly update view when insertion happens
+        }).subscribe();
+    }
+
+    async function logout() {
+        await _supabase.auth.signOut();
+        window.location.reload();
+    }
+</script>
+</body>
+</html>
