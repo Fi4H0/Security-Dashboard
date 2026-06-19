@@ -41,27 +41,64 @@
 </div>
 
 <script>
-    // Paste your exact credentials here
-    const SUPABASE_URL = https://nlnininesnenehyoshjw.supabase.co;
-    const SUPABASE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sbmluaW5lc25lbmVoeW9zaGp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAwMjUsImV4cCI6MjA5NzQyNjAyNX0.01yLEIL2-IoOV401Tw_7f5jEvoUocTOguQSPYazxVGk;
+    // 1. Core Configuration (Make sure there is no trailing slash or /rest/v1/ here!)
+    const SUPABASE_URL = "https://nlnininesnenehyoshjw.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sbmluaW5lc25lbmVoeW9zaGp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAwMjUsImV4cCI6MjA5NzQyNjAyNX0.01yLEIL2-IoOV401Tw_7f5jEvoUocTOguQSPYazxVGk";
     
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let _supabase;
 
-    // Run automatically on page load to check if user is already logged in
-    window.onload = async () => {
-        const { data: { session } } = await _supabase.auth.getSession();
-        if (session) { showDashboard(); }
-    };
-
-    async function login() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-        if (error) { alert("Access Denied: " + error.message); } 
-        else { showDashboard(); }
+    // 2. Initialize client safely inside a try/catch block
+    try {
+        _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log("Supabase client initialized successfully.");
+    } catch (e) {
+        console.error("Critical Initialization Error:", e.message);
+        alert("Configuration Error: Please check your Supabase URL and Key format.");
     }
 
+    // 3. Automated session check on page load
+    window.onload = async () => {
+        if (!_supabase) return;
+        try {
+            const { data: { session }, error } = await _supabase.auth.getSession();
+            if (error) throw error;
+            if (session) { showDashboard(); }
+        } catch (e) {
+            console.error("Session fetch failed:", e.message);
+        }
+    };
+
+    // 4. The Login Function (Now explicitly bound and isolated)
+    async function login() {
+        if (!_supabase) {
+            alert("Database client not initialized. Cannot login.");
+            return;
+        }
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        
+        if (!email || !password) {
+            alert("Please fill in all credential fields.");
+            return;
+        }
+
+        console.log("Attempting authentication for:", email);
+        
+        try {
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+            if (error) { 
+                alert("Access Denied: " + error.message); 
+            } else { 
+                console.log("Login verified.");
+                showDashboard(); 
+            }
+        } catch (err) {
+            alert("Network/System Error: " + err.message);
+        }
+    }
+
+    // 5. Interface Routing Control
     function showDashboard() {
         document.getElementById('login-form').classList.add('hidden');
         document.getElementById('dashboard').classList.remove('hidden');
@@ -70,19 +107,27 @@
     }
 
     async function fetchLogs() {
-        const { data, error } = await _supabase
-            .from('logs')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(10);
-            
-        if (!error) { renderLogs(data); }
-        else { document.getElementById('log-container').innerText = "Error loading logs."; }
+        try {
+            const { data, error } = await _supabase
+                .from('logs')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(10);
+                
+            if (error) throw error;
+            renderLogs(data);
+        } catch (e) {
+            console.error("Log retrieval failed:", e.message);
+            document.getElementById('log-container').innerText = "Security table read error.";
+        }
     }
 
     function renderLogs(logs) {
         const container = document.getElementById('log-container');
-        if(logs.length === 0) { container.innerHTML = "<p style='color:#94a3b8; text-align:center;'>No intrusion history detected.</p>"; return; }
+        if (!logs || logs.length === 0) { 
+            container.innerHTML = "<p style='color:#94a3b8; text-align:center;'>No intrusion history detected.</p>"; 
+            return; 
+        }
         
         container.innerHTML = logs.map(log => `
             <div class="log-item">
@@ -93,14 +138,21 @@
     }
 
     function subscribeToLiveUpdates() {
-        _supabase.channel('schema-db-changes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'logs' }, payload => {
-            fetchLogs(); // Instantly update view when insertion happens
-        }).subscribe();
+        try {
+            _supabase.channel('schema-db-changes')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'logs' }, payload => {
+                console.log("Real-time insertion captured!");
+                fetchLogs(); 
+            }).subscribe();
+        } catch (e) {
+            console.error("Real-time socket subscription failed:", e.message);
+        }
     }
 
     async function logout() {
-        await _supabase.auth.signOut();
+        if (_supabase) {
+            await _supabase.auth.signOut();
+        }
         window.location.reload();
     }
 </script>
