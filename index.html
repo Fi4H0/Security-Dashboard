@@ -278,7 +278,7 @@
         if (!confirm("Are you sure you want to force a hardware reset on the remote ESP32?")) return;
         
         const { error } = await _supabase
-            .from('commands')
+            .from('command')
             .insert([{ command: 'RESTART', processed: false }]);
             
         if (error) {
