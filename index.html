@@ -277,12 +277,29 @@
 }
        
 
-    function subscribeToLiveUpdates() {
-        _supabase.channel('schema-db-changes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'logs' }, () => {
-            fetchLogs();
-        }).subscribe();
-    }
+function subscribeToLiveUpdates() {
+    console.log("Initializing real-time monitoring connection...");
+
+    _supabase
+        .channel('schema-db-changes')
+        .on(
+            'postgres_changes', 
+            { 
+                event: 'INSERT',   // Only listen for NEW rows being added
+                schema: 'public', 
+                table: 'logs' 
+            }, 
+            (payload) => {
+                console.log("Live motion event captured from database!", payload.new);
+                
+                // Instantly query the table to refresh the top 5 records smoothly
+                fetchLogs();
+            }
+        )
+        .subscribe((status) => {
+            console.log("Real-time synchronization status:", status);
+        });
+}
 
     // NEW FUNCTION: Writes a restart request command into the command queue table
     async function triggerHardwareReset() {
