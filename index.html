@@ -139,23 +139,27 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        .log-list {
-            max-height: 280px;
-            overflow-y: auto;
-            margin-top: 15px;
-        }
+.log-list {
+    max-height: 320px;
+    overflow-y: auto;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column; /* Force items vertically downwards instead of sideways */
+    gap: 12px; /* Uniform spacing between logs */
+}
 
-        .log-card {
-            background: rgba(30, 41, 59, 0.6);
-            border: 1px solid var(--border-color);
-            padding: 14px 16px;
-            border-radius: 14px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: slideIn 0.3s ease-out;
-        }
+.log-card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid var(--border-color);
+    padding: 14px 16px;
+    border-radius: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%; /* Take up the entire width of the panel container */
+    animation: slideIn 0.3s ease-out;
+}
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -250,22 +254,28 @@
     }
 
     function renderLogs(logs) {
-        const container = document.getElementById('log-container');
-        if(!logs || logs.length === 0) { 
-            container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:14px; margin:40px 0;'>No intrusion events logged.</p>"; 
-            return; 
-        }
+    const container = document.getElementById('log-container');
+    if(!logs || logs.length === 0) { 
+        container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:14px; margin:40px 0;'>No intrusion events logged.</p>"; 
+        return; 
+    }
+    
+    container.innerHTML = logs.map(log => {
+        const dateObj = new Date(log.created_at);
+        const displayDate = dateObj.toLocaleDateString([], {day: '2-digit', month: '2-digit'});
+        const displayTime = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: false});
         
-        container.innerHTML = logs.map(log => `
+        return `
             <div class="log-card">
                 <div class="log-title">
-                    <span style="color:var(--accent-red)">●</span> Motion Detected
+                    <span style="color:var(--accent-red); margin-right: 4px;">●</span> Motion Detected
                 </div>
-               <div class="log-time">
-    ${new Date(log.created_at).toLocaleDateString([], {day: '2-digit', month: '2-digit'})} @ ${new Date(log.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false})}
-</div>
-        `).join('');
-    }
+                <div class="log-time">${displayDate} @ ${displayTime}</div>
+            </div>
+        `;
+    }).join('');
+}
+       
 
     function subscribeToLiveUpdates() {
         _supabase.channel('schema-db-changes')
