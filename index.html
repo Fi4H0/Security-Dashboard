@@ -189,13 +189,13 @@
 <div class="container">
     <div id="login-form" class="glass-panel">
         <h1>System Gateway</h1>
-        <input type="email" id="email" placeholder="Operator Identity (Email)">
+        <input type="email" id="email" placeholder="E-mail">
         <input type="password" id="password" placeholder="Passkey">
         <button class="btn-primary" onclick="login()">Authenticate</button>
     </div>
 
     <div id="dashboard" class="glass-panel hidden">
-        <h1>Taftalidze Security Hub</h1>
+        <h1>Tafta Security Hub</h1>
         
         <div class="status-container">
             <div class="pulse-dot"></div> TELEMETRY ONLINE
@@ -261,8 +261,9 @@
                 <div class="log-title">
                     <span style="color:var(--accent-red)">●</span> Motion Detected
                 </div>
-                <div class="log-time">${new Date(log.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}</div>
-            </div>
+               <div class="log-time">
+    ${new Date(log.created_at).toLocaleDateString([], {day: '2-digit', month: '2-digit'})} @ ${new Date(log.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false})}
+</div>
         `).join('');
     }
 
