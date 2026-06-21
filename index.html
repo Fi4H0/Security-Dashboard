@@ -236,12 +236,34 @@
         else { showDashboard(); }
     }
 
-    function showDashboard() {
-        document.getElementById('login-form').classList.add('hidden');
-        document.getElementById('dashboard').classList.remove('hidden');
-        fetchLogs();
-        subscribeToLiveUpdates();
-    }
+function showDashboard() {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    
+    // FETCH HISTORICAL DATA & CONNECT SOCKETS
+    fetchLogs();
+    subscribeToLiveUpdates();
+
+    // THE AUTOPLAY FIX: Force-unlock the audio engine on the very first click anywhere
+    const unlockAudioEngine = () => {
+        alertSound.play()
+            .then(() => {
+                // Instantly pause and rewind—the browser now registers the engine as "allowed"
+                alertSound.pause();
+                alertSound.currentTime = 0;
+                console.log("🔊 Web Audio Context successfully unlocked for live stream updates!");
+                
+                // Remove the event listener so it doesn't run on every single click
+                document.removeEventListener('click', unlockAudioEngine);
+                document.removeEventListener('touchstart', unlockAudioEngine);
+            })
+            .catch(err => console.log("Audio engine waiting for direct interaction...", err.message));
+    };
+
+    // Listen for either a mouse click or a mobile screen tap
+    document.addEventListener('click', unlockAudioEngine);
+    document.addEventListener('touchstart', unlockAudioEngine);
+}
 
     async function fetchLogs() {
         const { data, error } = await _supabase
