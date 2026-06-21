@@ -301,8 +301,8 @@ function showDashboard() {
 
 // 1. Define a high-tech modern chime sound (Open-source digital alert tone)
 // Universally supported MP3 format (Works on iOS, Safari, Chrome, and Android)
-const alertSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav");
-// so the subscribeToLiveUpdates() function can still access it below)
+// Line 12-15 (or wherever your global variables are declared)
+const alertSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-600.mp3?v=2026");
 
 function subscribeToLiveUpdates() {
     console.log("Initializing real-time monitoring connection...");
@@ -315,15 +315,26 @@ _supabase
         (payload) => {
             console.log("Live motion event captured!", payload.new);
             
-            // Safe Audio Execution Layer
-            alertSound.currentTime = 0; 
-            alertSound.play().catch((audioError) => {
-                // If the browser blocks it again, it prints a warning here 
-                // instead of crashing the dashboard!
-                console.warn("Audio playback paused by browser rules:", audioError.message);
-            });
+            // 1. SAFELY RESET AND PLAY AUDIO
+            try {
+                if (alertSound) {
+                    alertSound.currentTime = 0;
+                    
+                    // Native HTML5 audio returns a Promise. We MUST catch failures on the promise itself!
+                    const playPromise = alertSound.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.catch((audioError) => {
+                            console.warn("Audio playback held by browser permission restrictions:", audioError.message);
+                        });
+                    }
+                }
+            } catch (systemError) {
+                console.warn("Local multimedia interface busy or unsupported:", systemError.message);
+            }
             
-            fetchLogs(); // Keeps updating your activity log list smoothly
+            // 2. REFRESH YOUR DATA VISUALIZATION
+            fetchLogs(); 
         }
     )
     .subscribe();
