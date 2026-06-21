@@ -307,38 +307,37 @@ const alertSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2
 function subscribeToLiveUpdates() {
     console.log("Initializing real-time monitoring connection...");
 
-_supabase
-    .channel('schema-db-changes')
-    .on(
-        'postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'logs' }, 
-        (payload) => {
-            console.log("Live motion event captured!", payload.new);
-            
-            // 1. SAFELY RESET AND PLAY AUDIO
-            try {
-                if (alertSound) {
-                    alertSound.currentTime = 0;
-                    
-                    // Native HTML5 audio returns a Promise. We MUST catch failures on the promise itself!
-                    const playPromise = alertSound.play();
-                    
-                    if (playPromise !== undefined) {
-                        playPromise.catch((audioError) => {
-                            console.warn("Audio playback held by browser permission restrictions:", audioError.message);
-                        });
+    _supabase
+        .channel('schema-db-changes')
+        .on(
+            'postgres_changes', 
+            { event: 'INSERT', schema: 'public', table: 'logs' }, 
+            (payload) => {
+                console.log("Live motion event captured!", payload.new);
+                
+                // 1. SAFELY RESET AND PLAY AUDIO
+                try {
+                    if (alertSound) {
+                        alertSound.currentTime = 0;
+                        
+                        // Native HTML5 audio returns a Promise. We MUST catch failures on the promise itself!
+                        const playPromise = alertSound.play();
+                        
+                        if (playPromise !== undefined) {
+                            playPromise.catch((audioError) => {
+                                console.warn("Audio playback held by browser permission restrictions:", audioError.message);
+                            });
+                        }
                     }
+                } catch (systemError) {
+                    console.warn("Local multimedia interface busy or unsupported:", systemError.message);
                 }
-            } catch (systemError) {
-                console.warn("Local multimedia interface busy or unsupported:", systemError.message);
+                
+                // 2. REFRESH YOUR DATA VISUALIZATION
+                fetchLogs(); 
             }
-            
-            // 2. REFRESH YOUR DATA VISUALIZATION
-            fetchLogs(); 
-        }
-    )
-    .subscribe();
-        });
+        )
+        .subscribe(); // Perfectly terminated without stray brackets
 }
 
     // NEW FUNCTION: Writes a restart request command into the command queue table
