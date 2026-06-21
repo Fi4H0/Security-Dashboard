@@ -278,7 +278,10 @@
        
 
 // 1. Define a high-tech modern chime sound (Open-source digital alert tone)
-const alertSound = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
+const alertSound = new Audio("https://actions.google.com/sounds/v1/sonar/ping_long_single.ogg");
+
+// (Ensure this variable remains defined at the global script level, 
+// so the subscribeToLiveUpdates() function can still access it below)
 
 function subscribeToLiveUpdates() {
     console.log("Initializing real-time monitoring connection...");
