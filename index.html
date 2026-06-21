@@ -278,9 +278,8 @@
        
 
 // 1. Define a high-tech modern chime sound (Open-source digital alert tone)
-const alertSound = new Audio("https://actions.google.com/sounds/v1/sonar/ping_long_single.ogg");
-
-// (Ensure this variable remains defined at the global script level, 
+// Universally supported MP3 format (Works on iOS, Safari, Chrome, and Android)
+const alertSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav");
 // so the subscribeToLiveUpdates() function can still access it below)
 
 function subscribeToLiveUpdates() {
