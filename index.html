@@ -3,363 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taftalidze Guard HQ</title>
+    <title>Taftalidze Security Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-dark: #090d16;
-            --panel-bg: rgba(30, 41, 59, 0.4);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --accent-cyan: #06b6d4;
-            --accent-red: #ef4444;
-            --accent-green: #10b981;
+            --bg-main: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.6);
+            --border-color: #334155;
             --text-main: #f8fafc;
-            --text-muted: #64748b;
+            --text-muted: #94a3b8;
+            --accent-red: #ef4444;
+            --accent-green: #22c55e;
+            --accent-cyan: #06b6d4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #04060a, #0f172a);
+            background-color: var(--bg-main);
             color: var(--text-main);
-            margin: 0;
-            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow-x: hidden;
+            padding: 20px;
         }
 
-        .glass-panel {
+        .container {
             width: 100%;
             max-width: 480px;
-            background: var(--panel-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: #1e293b;
             border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 35px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            box-sizing: border-box;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
 
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 25px;
-            background: linear-gradient(to right, #38bdf8, #06b6d4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
         }
 
         input {
             width: 100%;
-            padding: 14px 16px;
-            margin: 10px 0;
-            border-radius: 12px;
+            padding: 12px;
+            background: #0f172a;
             border: 1px solid var(--border-color);
-            background: rgba(15, 23, 42, 0.6);
-            color: white;
-            box-sizing: border-box;
-            font-size: 15px;
-            transition: all 0.2s;
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
         }
 
         input:focus {
-            outline: none;
             border-color: var(--accent-cyan);
-            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
         }
 
-        button {
+        .btn {
             width: 100%;
-            padding: 14px;
-            margin: 12px 0 0 0;
-            border-radius: 12px;
+            padding: 12px;
             border: none;
-            font-size: 15px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #06b6d4, #0891b2);
-            color: white;
-            box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+            background: var(--accent-cyan);
+            color: #0f172a;
         }
 
         .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+            opacity: 0.9;
         }
 
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #f87171;
-        }
-
-        .btn-danger:hover {
-            background: var(--accent-red);
-            color: white;
-            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
-        }
-
-        .status-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 13px;
-            color: var(--accent-green);
-            background: rgba(16, 185, 129, 0.06);
-            padding: 8px 16px;
-            border-radius: 100px;
-            width: fit-content;
-            margin: 0 auto 25px auto;
-            border: 1px solid rgba(16, 185, 129, 0.15);
-        }
-
-        .pulse-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
-.log-list {
-    max-height: 320px;
-    overflow-y: auto;
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column; /* Force items vertically downwards instead of sideways */
-    gap: 12px; /* Uniform spacing between logs */
-}
-
-.log-card {
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid var(--border-color);
-    padding: 14px 16px;
-    border-radius: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-sizing: border-box;
-    width: 100%; /* Take up the entire width of the panel container */
-    animation: slideIn 0.3s ease-out;
-}
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .log-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            color: #f1f5f9;
-        }
-
-        .log-time {
-            font-size: 12px;
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
             color: var(--text-muted);
         }
 
-        .control-group {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
+        .btn-danger {
+            background: transparent;
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            margin-top: 15px;
         }
 
-        .hidden { display: none !important; }
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Dashboard Top Layout Layout */
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        #audio-toggle-btn {
+            width: auto;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 20px;
+        }
+
+        /* Activity Stream Cards Layout */
+        .log-list {
+            max-height: 340px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .log-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 14px 16px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .log-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .log-time {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="login-form" class="glass-panel">
-        <h1>System Gateway</h1>
-        <input type="email" id="email" placeholder="E-mail">
-        <input type="password" id="password" placeholder="Passkey">
-        <button class="btn-primary" onclick="login()">Authenticate</button>
-    </div>
-
-    <div id="dashboard" class="glass-panel hidden">
-        <h1>Tafta Security Hub</h1>
-        
-        <div class="status-container">
-            <div class="pulse-dot"></div> TELEMETRY ONLINE
-        </div>
-
-        <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px;">Activity Stream</h3>
-        <div id="log-container" class="log-list"></div>
-
-        <div class="control-group">
-            <button class="btn-danger" onclick="triggerHardwareReset()">Remote Restart ESP32</button>
-            <button onclick="logout()" style="background: transparent; color: var(--text-muted); font-size: 13px; margin-top: 15px;">Terminate Session</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    // Paste your exact keys here (Ensure quotes are surrounding them)
-    const SUPABASE_URL = "https://nlnininesnenehyoshjw.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sbmluaW5lc25lbmVoeW9zaGp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAwMjUsImV4cCI6MjA5NzQyNjAyNX0.01yLEIL2-IoOV401Tw_7f5jEvoUocTOguQSPYazxVGk";
-    
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    window.onload = async () => {
-        const { data: { session } } = await _supabase.auth.getSession();
-        if (session) { showDashboard(); }
-    };
-
-    async function login() {
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        
-        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-        if (error) { alert("Access Denied: " + error.message); } 
-        else { showDashboard(); }
-    }
-
-function showDashboard() {
-    document.getElementById('login-form').classList.add('hidden');
-    document.getElementById('dashboard').classList.remove('hidden');
-    
-    // FETCH HISTORICAL DATA & CONNECT SOCKETS
-    fetchLogs();
-    subscribeToLiveUpdates();
-
-    // THE AUTOPLAY FIX: Force-unlock the audio engine on the very first click anywhere
-    const unlockAudioEngine = () => {
-        alertSound.play()
-            .then(() => {
-                // Instantly pause and rewind—the browser now registers the engine as "allowed"
-                alertSound.pause();
-                alertSound.currentTime = 0;
-                console.log("🔊 Web Audio Context successfully unlocked for live stream updates!");
-                
-                // Remove the event listener so it doesn't run on every single click
-                document.removeEventListener('click', unlockAudioEngine);
-                document.removeEventListener('touchstart', unlockAudioEngine);
-            })
-            .catch(err => console.log("Audio engine waiting for direct interaction...", err.message));
-    };
-
-    // Listen for either a mouse click or a mobile screen tap
-    document.addEventListener('click', unlockAudioEngine);
-    document.addEventListener('touchstart', unlockAudioEngine);
-}
-
-    async function fetchLogs() {
-        const { data, error } = await _supabase
-            .from('logs')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(5);
-            
-        if (!error) { renderLogs(data); }
-    }
-
-    function renderLogs(logs) {
-    const container = document.getElementById('log-container');
-    if(!logs || logs.length === 0) { 
-        container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:14px; margin:40px 0;'>No intrusion events logged.</p>"; 
-        return; 
-    }
-    
-    container.innerHTML = logs.map(log => {
-        const dateObj = new Date(log.created_at);
-        const displayDate = dateObj.toLocaleDateString([], {day: '2-digit', month: '2-digit'});
-        const displayTime = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: false});
-        
-        return `
-            <div class="log-card">
-                <div class="log-title">
-                    <span style="color:var(--accent-red); margin-right: 4px;">●</span> Motion Detected
-                </div>
-                <div class="log-time">${displayDate} @ ${displayTime}</div>
+    <div class="container">
+        <div id="login-form">
+            <h2>ACTIVITY STREAM AUTH</h2>
+            <div class="form-group">
+                <label>Operator Email</label>
+                <input type="email" id="email" placeholder="operator@secure.io">
             </div>
-        `;
-    }).join('');
-}
-       
+            <div class="form-group">
+                <label>Security Phrase</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" onclick="login()">Authenticate Console</button>
+        </div>
 
-// 1. Define a high-tech modern chime sound (Open-source digital alert tone)
-// Universally supported MP3 format (Works on iOS, Safari, Chrome, and Android)
-// Line 12-15 (or wherever your global variables are declared)
-// Clean, standard MP3 chime from a rock-solid, cross-origin open developer CDN
-const alertSound = new Audio("https://raw.githubusercontent.com/skype-web-sdk/skype-web-sdk-samples/master/audio/incoming.mp3");
+        <div id="dashboard" class="hidden">
+            <div class="dash-header">
+                <h2>ACTIVITY STREAM</h2>
+                <div class="header-actions">
+                    <button id="audio-toggle-btn" class="btn btn-secondary" onclick="toggleDashboardAudio()">
+                        🔈 Audio Disabled
+                    </button>
+                </div>
+            </div>
 
-function subscribeToLiveUpdates() {
-    console.log("Initializing real-time monitoring connection...");
+            <div id="log-container" class="log-list"></div>
 
-    _supabase
-        .channel('schema-db-changes')
-        .on(
-            'postgres_changes', 
-            { event: 'INSERT', schema: 'public', table: 'logs' }, 
-            (payload) => {
-                console.log("Live motion event captured!", payload.new);
-                
-                // 1. SAFELY RESET AND PLAY AUDIO
-                try {
-                    if (alertSound) {
+            <button class="btn btn-danger" onclick="triggerRemoteRestart()">
+                Execute Remote ESP32 Restart
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SUPABASE ACCREDITATION CREDENTIALS ---
+        const SUPABASE_PROJECT_ID = "nlnininesnenehyoshjw";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sbmluaW5lc25lbmVoeW9zaGp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAwMjUsImV4cCI6MjA5NzQyNjAyNX0.01yLEIL2-IoOV401Tw_7f5jEvoUocTOguQSPYazxVGk";
+        
+        const _supabase = supabase.createClient(
+            `https://${SUPABASE_PROJECT_ID}.supabase.co`, 
+            SUPABASE_ANON_KEY
+        );
+
+        // --- 2. MULTIMEDIA ENGINE INITIALIZATION ---
+        const alertSound = new Audio("https://raw.githubusercontent.com/skype-web-sdk/skype-web-sdk-samples/master/audio/incoming.mp3");
+        let isAudioMuted = true;
+
+        // --- 3. SECURITY AUTHENTICATION HANDLERS ---
+        async function login() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if(!email || !password) return alert("Please enter all authorization credentials.");
+
+            try {
+                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert("Authorization Terminated: " + error.message);
+                } else {
+                    showDashboard();
+                }
+            } catch(err) {
+                alert("Connection handshake failed.");
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            fetchLogs();
+            subscribeToLiveUpdates();
+        }
+
+        // --- 4. DATA RETRIEVAL & RENDERING PIPELINES ---
+        async function fetchLogs() {
+            try {
+                const { data: logs, error } = await _supabase
+                    .from('logs')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (error) throw error;
+                renderLogs(logs);
+            } catch (err) {
+                console.error("Error drawing log data panel:", err.message);
+            }
+        }
+
+        function renderLogs(logs) {
+            const container = document.getElementById('log-container');
+            if (!logs || logs.length === 0) {
+                container.innerHTML = `<p style="color:var(--text-muted); text-align:center; font-size:14px; margin:40px 0;">No intrusion events logged.</p>`;
+                return;
+            }
+
+            container.innerHTML = logs.map(log => {
+                const dateObj = new Date(log.created_at);
+                const displayDate = dateObj.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
+                const displayTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+                return `
+                    <div class="log-card">
+                        <div class="log-title">
+                            <span style="color:var(--accent-red); margin-right: 6px;">●</span> Motion Detected
+                        </div>
+                        <div class="log-time">${displayDate} @ ${displayTime}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- 5. AUDIO GATEWAY PERSISTENCE CONTROLLERS ---
+        function toggleDashboardAudio() {
+            const btn = document.getElementById('audio-toggle-btn');
+            
+            if (isAudioMuted) {
+                // Interactive trigger handshake to explicitly satisfy browser autoplay requirements
+                alertSound.play()
+                    .then(() => {
+                        alertSound.pause();
                         alertSound.currentTime = 0;
                         
-                        // Native HTML5 audio returns a Promise. We MUST catch failures on the promise itself!
-                        const playPromise = alertSound.play();
-                        
-                        if (playPromise !== undefined) {
-                            playPromise.catch((audioError) => {
-                                console.warn("Audio playback held by browser permission restrictions:", audioError.message);
-                            });
-                        }
-                    }
-                } catch (systemError) {
-                    console.warn("Local multimedia interface busy or unsupported:", systemError.message);
-                }
-                
-                // 2. REFRESH YOUR DATA VISUALIZATION
-                fetchLogs(); 
+                        isAudioMuted = false;
+                        btn.innerHTML = "🔊 Audio Active";
+                        btn.style.borderColor = "var(--accent-green)";
+                        btn.style.color = "var(--accent-green)";
+                        console.log("Web Audio Context initialized and verified.");
+                    })
+                    .catch((err) => {
+                        console.error("Audio initialization sequence blocked by host:", err.message);
+                    });
+            } else {
+                isAudioMuted = true;
+                btn.innerHTML = "🔈 Audio Disabled";
+                btn.style.borderColor = "var(--border-color)";
+                btn.style.color = "var(--text-muted)";
             }
-        )
-        .subscribe(); // Perfectly terminated without stray brackets
-}
-
-    // NEW FUNCTION: Writes a restart request command into the command queue table
-    async function triggerHardwareReset() {
-        if (!confirm("Are you sure you want to force a hardware reset on the remote ESP32?")) return;
-        
-        const { error } = await _supabase
-            .from('command')
-            .insert([{ command: 'RESTART', processed: false }]);
-            
-        if (error) {
-            alert("Failed to queue execution command: " + error.message);
-        } else {
-            alert("Restart command broadcasted! The ESP32 will reboot on its next validation check cycle.");
         }
-    }
 
-    async function logout() {
-        await _supabase.auth.signOut();
-        window.location.reload();
-    }
-</script>
+        // --- 6. REAL-TIME REALM EVENT SYNCHRONIZATION ---
+        function subscribeToLiveUpdates() {
+            console.log("Initializing real-time monitoring connection...");
+
+            _supabase
+                .channel('schema-db-changes')
+                .on(
+                    'postgres_changes', 
+                    { event: 'INSERT', schema: 'public', table: 'logs' }, 
+                    (payload) => {
+                        console.log("Live motion event captured!", payload.new);
+                        
+                        // Multimedia playback layer processing
+                        if (!isAudioMuted && alertSound) {
+                            try {
+                                alertSound.currentTime = 0;
+                                const playPromise = alertSound.play();
+                                if (playPromise !== undefined) {
+                                    playPromise.catch((e) => console.warn("Audio stream output deferred:", e.message));
+                                }
+                            } catch (err) {
+                                console.warn("System multimedia device context busy:", err.message);
+                            }
+                        }
+                        
+                        // Force a smooth visual list update loop
+                        fetchLogs(); 
+                    }
+                )
+                .subscribe((status) => {
+                    console.log("Subscription network channel sync:", status);
+                });
+        }
+
+        // --- 7. REMOTE REMOTING PROTOCOLS ---
+        async function triggerRemoteRestart() {
+            if (!confirm("Confirm immediate remote firmware hardware execution restart for ESP32?")) return;
+
+            try {
+                const { error } = await _supabase
+                    .from('command')
+                    .insert([{ command: 'RESTART', processed: false }]);
+
+                if (error) throw error;
+                alert("Execution sequence successfully queued into database pipeline. Unit will acknowledge within 10 seconds.");
+            } catch (err) {
+                alert("Failed to push execution instructions line: " + err.message);
+            }
+        }
+    </script>
 </body>
 </html>
