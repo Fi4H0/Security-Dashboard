@@ -277,6 +277,9 @@
 }
        
 
+// 1. Define a high-tech modern chime sound (Open-source digital alert tone)
+const alertSound = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
+
 function subscribeToLiveUpdates() {
     console.log("Initializing real-time monitoring connection...");
 
@@ -285,14 +288,22 @@ function subscribeToLiveUpdates() {
         .on(
             'postgres_changes', 
             { 
-                event: 'INSERT',   // Only listen for NEW rows being added
+                event: 'INSERT',   
                 schema: 'public', 
                 table: 'logs' 
             }, 
             (payload) => {
                 console.log("Live motion event captured from database!", payload.new);
                 
-                // Instantly query the table to refresh the top 5 records smoothly
+                // 2. Play the chime sound immediately
+                try {
+                    alertSound.currentTime = 0; // Rewind to start if triggers happen rapidly
+                    alertSound.play();
+                } catch (audioError) {
+                    console.log("Audio playback blocked by browser security policy:", audioError.message);
+                }
+                
+                // 3. Refresh the UI logs layout list smoothly
                 fetchLogs();
             }
         )
