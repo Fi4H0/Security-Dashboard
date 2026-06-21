@@ -285,32 +285,26 @@ const alertSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2
 function subscribeToLiveUpdates() {
     console.log("Initializing real-time monitoring connection...");
 
-    _supabase
-        .channel('schema-db-changes')
-        .on(
-            'postgres_changes', 
-            { 
-                event: 'INSERT',   
-                schema: 'public', 
-                table: 'logs' 
-            }, 
-            (payload) => {
-                console.log("Live motion event captured from database!", payload.new);
-                
-                // 2. Play the chime sound immediately
-                try {
-                    alertSound.currentTime = 0; // Rewind to start if triggers happen rapidly
-                    alertSound.play();
-                } catch (audioError) {
-                    console.log("Audio playback blocked by browser security policy:", audioError.message);
-                }
-                
-                // 3. Refresh the UI logs layout list smoothly
-                fetchLogs();
-            }
-        )
-        .subscribe((status) => {
-            console.log("Real-time synchronization status:", status);
+_supabase
+    .channel('schema-db-changes')
+    .on(
+        'postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'logs' }, 
+        (payload) => {
+            console.log("Live motion event captured!", payload.new);
+            
+            // Safe Audio Execution Layer
+            alertSound.currentTime = 0; 
+            alertSound.play().catch((audioError) => {
+                // If the browser blocks it again, it prints a warning here 
+                // instead of crashing the dashboard!
+                console.warn("Audio playback paused by browser rules:", audioError.message);
+            });
+            
+            fetchLogs(); // Keeps updating your activity log list smoothly
+        }
+    )
+    .subscribe();
         });
 }
 
