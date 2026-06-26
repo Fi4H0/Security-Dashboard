@@ -217,8 +217,34 @@
         );
 
         // --- 2. MULTIMEDIA ENGINE INITIALIZATION ---
-       const alertSound = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_short.ogg");
-        let isAudioMuted = true;
+// --- 2. NATIVE AUDIO SYNTHESIZER ---
+// No external links. This builds a digital chime right inside the browser memory.
+let isAudioMuted = true;
+
+function playSystemChime() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        // 'sine' gives a clean, smooth, high-tech electronic blip
+        oscillator.type = 'sine'; 
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Pitch (High A note)
+        
+        // Volume Envelope: Start at 20% volume, fast fade out over 0.2 seconds
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.2);
+        console.log("🔊 Synthesizer chime executed successfully.");
+    } catch (e) {
+        console.warn("Native hardware synth engine busy:", e.message);
+    }
+}
 
         // --- 3. SECURITY AUTHENTICATION HANDLERS ---
         async function login() {
@@ -285,68 +311,46 @@
             }).join('');
         }
 
-        // --- 5. AUDIO GATEWAY PERSISTENCE CONTROLLERS ---
-        function toggleDashboardAudio() {
-            const btn = document.getElementById('audio-toggle-btn');
-            
-            if (isAudioMuted) {
-                // Interactive trigger handshake to explicitly satisfy browser autoplay requirements
-                alertSound.play()
-                    .then(() => {
-                        alertSound.pause();
-                        alertSound.currentTime = 0;
-                        
-                        isAudioMuted = false;
-                        btn.innerHTML = "🔊 Audio Active";
-                        btn.style.borderColor = "var(--accent-green)";
-                        btn.style.color = "var(--accent-green)";
-                        console.log("Web Audio Context initialized and verified.");
-                    })
-                    .catch((err) => {
-                        console.error("Audio initialization sequence blocked by host:", err.message);
-                    });
-            } else {
-                isAudioMuted = true;
-                btn.innerHTML = "🔈 Audio Disabled";
-                btn.style.borderColor = "var(--border-color)";
-                btn.style.color = "var(--text-muted)";
+   // --- 5. DASHBOARD AUDIO TOGGLE CONTROLLER ---
+function toggleDashboardAudio() {
+    const btn = document.getElementById('audio-toggle-btn');
+    
+    if (isAudioMuted) {
+        // Human interaction immediately satisfies browser security requirements
+        playSystemChime();
+        isAudioMuted = false;
+        btn.innerHTML = "🔊 Audio Active";
+        btn.style.borderColor = "var(--accent-green)";
+        btn.style.color = "var(--accent-green)";
+    } else {
+        isAudioMuted = true;
+        btn.innerHTML = "🔈 Audio Disabled";
+        btn.style.borderColor = "var(--border-color)";
+        btn.style.color = "var(--text-muted)";
+    }
+}
+       // --- 6. REAL-TIME EVENT SYNCHRONIZATION ---
+function subscribeToLiveUpdates() {
+    console.log("Initializing real-time monitoring connection...");
+
+    _supabase
+        .channel('schema-db-changes')
+        .on(
+            'postgres_changes', 
+            { event: 'INSERT', schema: 'public', table: 'logs' }, 
+            (payload) => {
+                console.log("Live motion event captured!", payload.new);
+                
+                // Trigger our internal synthesizer instead of an external file
+                if (!isAudioMuted) {
+                    playSystemChime();
+                }
+                
+                fetchLogs(); 
             }
-        }
-
-        // --- 6. REAL-TIME REALM EVENT SYNCHRONIZATION ---
-        function subscribeToLiveUpdates() {
-            console.log("Initializing real-time monitoring connection...");
-
-            _supabase
-                .channel('schema-db-changes')
-                .on(
-                    'postgres_changes', 
-                    { event: 'INSERT', schema: 'public', table: 'logs' }, 
-                    (payload) => {
-                        console.log("Live motion event captured!", payload.new);
-                        
-                        // Multimedia playback layer processing
-                        if (!isAudioMuted && alertSound) {
-                            try {
-                                alertSound.currentTime = 0;
-                                const playPromise = alertSound.play();
-                                if (playPromise !== undefined) {
-                                    playPromise.catch((e) => console.warn("Audio stream output deferred:", e.message));
-                                }
-                            } catch (err) {
-                                console.warn("System multimedia device context busy:", err.message);
-                            }
-                        }
-                        
-                        // Force a smooth visual list update loop
-                        fetchLogs(); 
-                    }
-                )
-                .subscribe((status) => {
-                    console.log("Subscription network channel sync:", status);
-                });
-        }
-
+        )
+        .subscribe();
+}
         // --- 7. REMOTE REMOTING PROTOCOLS ---
         async function triggerRemoteRestart() {
             if (!confirm("Confirm immediate remote firmware hardware execution restart for ESP32?")) return;
