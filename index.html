@@ -13,13 +13,10 @@
             --grafana-border: #2c323a;
             --text-main: #d8d9da;
             --text-muted: #7b8087;
-            
-            /* Grafana Vibrant Accent Palette */
             --orange-accent: #ff780a;
             --green-accent: #56a64b;
             --blue-accent: #5794f2;
             --red-accent: #f2495c;
-            
             --font-mono: "Fira Code", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
         }
 
@@ -45,11 +42,10 @@
             max-width: 580px;
             background: var(--grafana-panel);
             border: 1px solid var(--grafana-border);
-            border-radius: 4px; /* Grafana uses sharp/clean geometric lines */
+            border-radius: 4px;
             box-shadow: 0 12px 36px rgba(0,0,0,0.6);
         }
 
-        /* Top Control Bar */
         .system-bar {
             background: #181b1f;
             border-bottom: 1px solid var(--grafana-border);
@@ -78,7 +74,6 @@
             padding: 20px;
         }
 
-        /* Stats Strip */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -110,7 +105,6 @@
             margin-top: 4px;
         }
 
-        /* Matrix Heatmap */
         .heatmap-panel {
             background: var(--grafana-card);
             border: 1px solid var(--grafana-border);
@@ -149,7 +143,6 @@
             border-color: #fff;
         }
 
-        /* Log Streaming Layout */
         .log-list {
             max-height: 260px;
             overflow-y: auto;
@@ -199,10 +192,9 @@
             border: 1px solid rgba(87, 148, 242, 0.3);
         }
 
-        /* Action Controls */
         .control-row {
             display: grid;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: 1fr;
             gap: 10px;
             margin-top: 20px;
             align-items: center;
@@ -240,7 +232,6 @@
             color: #fff;
         }
 
-        /* Auth Screen Design */
         .auth-container {
             padding: 30px;
             max-width: 400px;
@@ -351,18 +342,25 @@
     </div>
 
     <script>
-        // --- 1. SUPABASE ACCREDITATION CREDENTIALS ---
+        // --- 1. GLOBAL SCOPE DECLARATIONS ---
+        let isAudioMuted = true;
+        let _supabase = null;
+
         const SUPABASE_PROJECT_ID = "nlnininesnenehyoshjw";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sbmluaW5lc25lbmVoeW9zaGp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAwMjUsImV4cCI6MjA5NzQyNjAyNX0.01yLEIL2-IoOV401Tw_7f5jEvoUocTOguQSPYazxVGk";
         
-        const _supabase = supabase.createClient(
-            `https://${SUPABASE_PROJECT_ID}.supabase.co`, 
-            SUPABASE_ANON_KEY
-        );
+        try {
+            if (typeof supabase !== 'undefined') {
+                _supabase = supabase.createClient(
+                    `https://${SUPABASE_PROJECT_ID}.supabase.co`, 
+                    SUPABASE_ANON_KEY
+                );
+            }
+        } catch (e) {
+            console.warn("Supabase library initialization skipped/blocked.");
+        }
 
-        // --- 2. NATIVE AUDIO SYNTHESIZER ---
-        let isAudioMuted = true;
-
+        // --- 2. AUDIO SYNTHESIZER ---
         function playSystemChime() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -387,6 +385,10 @@
 
         // --- 3. SECURITY AUTHENTICATION HANDLERS ---
         async function login() {
+            if (!_supabase) {
+                alert("Network Warning: Supabase client unavailable. Check connection/CDN access.");
+                return;
+            }
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
@@ -400,7 +402,7 @@
                     showDashboard();
                 }
             } catch(err) {
-                alert("Connection handshake failed.");
+                alert("Connection handshake failed: " + err.message);
             }
         }
 
@@ -415,8 +417,9 @@
             subscribeToLiveUpdates();
         }
 
-        // --- 4. DATA RETRIEVAL & RENDERING PIPELINES ---
+        // --- 4. DATA RETRIEVAL & RENDERING ---
         async function fetchLogs() {
+            if (!_supabase) return;
             try {
                 const { data: logs, error } = await _supabase
                     .from('logs')
@@ -425,8 +428,6 @@
                     .limit(5);
 
                 if (error) throw error;
-                
-                // Update Grafana Counter Card Dynamically
                 document.getElementById('total-alarms-count').innerText = logs.length;
                 renderLogs(logs);
             } catch (err) {
@@ -445,7 +446,6 @@
                 const dateObj = new Date(log.created_at);
                 const displayDate = dateObj.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
                 const displayTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                
                 const distanceValue = log.distance_cm ? `${log.distance_cm} cm` : 'Null Vector';
 
                 return `
@@ -464,8 +464,59 @@
             }).join('');
         }
 
-        // --- 5. AUDIO PERSISTENCE CONTROLLERS ---
+        // --- 5. AUDIO PERSISTENCE ---
         function toggleDashboardAudio() {
             const btn = document.getElementById('audio-toggle-btn');
-            
-            if (isAudioMuted)
+            if (isAudioMuted) {
+                playSystemChime();
+                isAudioMuted = false;
+                btn.innerHTML = "🔊 Audio Active";
+                btn.style.borderColor = "var(--green-accent)";
+                btn.style.color = "var(--green-accent)";
+            } else {
+                isAudioMuted = true;
+                btn.innerHTML = "🔈 Audio Disabled";
+                btn.style.borderColor = "var(--grafana-border)";
+                btn.style.color = "var(--text-main)";
+            }
+        }
+
+        // --- 6. REAL-TIME EVENT SYNCHRONIZATION ---
+        function subscribeToLiveUpdates() {
+            if (!_supabase) return;
+            _supabase
+                .channel('schema-db-changes')
+                .on(
+                    'postgres_changes', 
+                    { event: 'INSERT', schema: 'public', table: 'logs' }, 
+                    (payload) => {
+                        if (!isAudioMuted) playSystemChime();
+                        fetchLogs(); 
+                        const nodes = document.querySelectorAll('.matrix-node');
+                        const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+                        randomNode.classList.add('active-pulse');
+                        setTimeout(() => randomNode.classList.remove('active-pulse'), 2000);
+                    }
+                )
+                .subscribe();
+        }
+
+        // --- 7. REMOTE PROTOCOLS ---
+        async function triggerRemoteRestart() {
+            if (!_supabase) return alert("Supabase disconnected.");
+            if (!confirm("Confirm immediate remote firmware hardware execution restart for ESP32?")) return;
+
+            try {
+                const { error } = await _supabase
+                    .from('commands')
+                    .insert([{ command: 'RESTART', processed: false }]);
+
+                if (error) throw error;
+                alert("Execution sequence successfully queued into database pipeline.");
+            } catch (err) {
+                alert("Failed to push instructions line: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
