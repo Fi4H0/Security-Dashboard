@@ -284,7 +284,7 @@
         <h1 style="font-size: 14px; color: var(--orange-accent); font-family: var(--font-mono); margin-bottom: 20px; letter-spacing: 1px;">// CONSOLE ACCESS LOCK</h1>
         <div class="input-wrapper">
             <label>Operator Node Email</label>
-            <input type="email" id="email" placeholder="admin@node.io">
+            <input type="email" id="email" placeholder="your@e-mail.com">
         </div>
         <div class="input-wrapper">
             <label>Cryptographic Phrase</label>
@@ -305,10 +305,15 @@
                     <div class="stat-label">Total Alarms</div>
                     <div class="stat-value" style="color: var(--red-accent);" id="total-alarms-count">0</div>
                 </div>
-                <div class="stat-box healthy">
-                    <div class="stat-label">Uptime Metric</div>
-                    <div class="stat-value" style="color: var(--green-accent);">99.8%</div>
-                </div>
+<div class="stat-box healthy">
+    <div class="stat-label">Uptime Metric</div>
+    <div class="stat-value" style="color: var(--green-accent);">99.8%</div>
+</div>
+
+<div class="stat-box healthy">
+    <div class="stat-label">Uptime Metric</div>
+    <div class="stat-value" style="color: var(--green-accent);" id="uptime-metric-value">0.0%</div>
+</div>
                 <div class="stat-box">
                     <div class="stat-label">Sys Kernel</div>
                     <div class="stat-value" style="color: var(--blue-accent);">v2.6</div>
@@ -413,24 +418,67 @@
         }
 
         // --- 4. DATA RETRIEVAL & RENDERING PIPELINES ---
- async function fetchLogs() {
+async function fetchLogs() {
     try {
-        // We request the total exact count of rows while slicing the data payload to 5
+        // 1. Fetch exact total counts and the 5 latest logs
         const { data: logs, error, count } = await _supabase
             .from('logs')
-            .select('*', { count: 'exact' }) 
+            .select('*', { count: 'exact' })
             .order('created_at', { ascending: false })
             .limit(5);
 
         if (error) throw error;
         
-        // Update the Grafana Counter Card with the absolute total from the database
         document.getElementById('total-alarms-count').innerText = count !== null ? count : 0;
-        
-        // Render only the top 5 recent visual records
         renderLogs(logs);
+
+        // 2. Fetch all logs from the past 24 hours to calculate true Uptime
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { count: dailyLogCount, error: uptimeError } = await _supabase
+            .from('logs')
+            .select('*', { count: 'exact', head: true })
+            .gte('created_at', oneDayAgo);
+
+        if (!uptimeError) {
+            calculateRealUptime(dailyLogCount);
+        }
+
     } catch (err) {
         console.error("Error drawing data panel:", err.message);
+    }
+}
+
+function calculateRealUptime(actualLogsReceived) {
+    // ASSUMPTION: If your ESP32 drops a heartbeat/ping log once every 5 minutes, 
+    // it should ideally send 288 logs in a 24-hour cycle (12 logs/hour * 24).
+    const expectedLogsPerDay = 288; 
+    
+    if (actualLogsReceived === 0) {
+        document.getElementById('uptime-metric-value').innerText = "0.0%";
+        return;
+    }
+
+    // Calculate ratio
+    let uptimePercentage = (actualLogsReceived / expectedLogsPerDay) * 100;
+    
+    // Cap it at 100% in case extra motion events happen frequently
+    if (uptimePercentage > 100) uptimePercentage = 100;
+    
+    const finalUptimeStr = uptimePercentage.toFixed(1) + "%";
+    const uptimeElement = document.getElementById('uptime-metric-value');
+    
+    uptimeElement.innerText = finalUptimeStr;
+
+    // Dynamically shift color themes if things look bad!
+    const parentBox = uptimeElement.closest('.stat-box');
+    if (uptimePercentage < 85) {
+        parentBox.classList.remove('healthy');
+        parentBox.classList.add('alerting');
+        uptimeElement.style.color = "var(--red-accent)";
+    } else {
+        parentBox.classList.remove('alerting');
+        parentBox.classList.add('healthy');
+        uptimeElement.style.color = "var(--green-accent)";
     }
 }
 
