@@ -413,22 +413,26 @@
         }
 
         // --- 4. DATA RETRIEVAL & RENDERING PIPELINES ---
-        async function fetchLogs() {
-            try {
-                const { data: logs, error } = await _supabase
-                    .from('logs')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(5);
+ async function fetchLogs() {
+    try {
+        // We request the total exact count of rows while slicing the data payload to 5
+        const { data: logs, error, count } = await _supabase
+            .from('logs')
+            .select('*', { count: 'exact' }) 
+            .order('created_at', { ascending: false })
+            .limit(5);
 
-                if (error) throw error;
-                
-                document.getElementById('total-alarms-count').innerText = logs.length;
-                renderLogs(logs);
-            } catch (err) {
-                console.error("Error drawing data panel:", err.message);
-            }
-        }
+        if (error) throw error;
+        
+        // Update the Grafana Counter Card with the absolute total from the database
+        document.getElementById('total-alarms-count').innerText = count !== null ? count : 0;
+        
+        // Render only the top 5 recent visual records
+        renderLogs(logs);
+    } catch (err) {
+        console.error("Error drawing data panel:", err.message);
+    }
+}
 
         function renderLogs(logs) {
             const container = document.getElementById('log-container');
