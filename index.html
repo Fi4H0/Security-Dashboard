@@ -3,35 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taftalidze Security Hub - Grafana Edition</title>
+    <title>Taftalidze Security Hub - UptimeRobot Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --grafana-bg: #0b0c10;
-            --grafana-panel: #141619;
-            --grafana-card: #1f2226;
-            --grafana-border: #2c323a;
-            --text-main: #d8d9da;
-            --text-muted: #7b8087;
+            --ur-bg: #f4f6f9;
+            --ur-card: #ffffff;
+            --ur-border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
             
-            /* Grafana Vibrant Accent Palette */
-            --orange-accent: #ff780a;
-            --green-accent: #56a64b;
-            --blue-accent: #5794f2;
-            --red-accent: #f2495c;
+            --green-accent: #10b981;
+            --green-bg: #ecfdf5;
+            --red-accent: #ef4444;
+            --red-bg: #fef2f2;
+            --blue-accent: #0284c7;
+            --blue-bg: #e0f2fe;
+            --orange-accent: #f59e0b;
             
-            --font-mono: "Fira Code", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: var(--font-sans);
         }
 
         body {
-            background-color: var(--grafana-bg);
+            background-color: var(--ur-bg);
             color: var(--text-main);
             min-height: 100vh;
             padding: 24px;
@@ -42,133 +44,158 @@
 
         .dashboard-wrapper {
             width: 100%;
-            max-width: 580px;
-            background: var(--grafana-panel);
-            border: 1px solid var(--grafana-border);
-            border-radius: 4px; /* Grafana uses sharp/clean geometric lines */
-            box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+            max-width: 640px;
+            background: var(--ur-card);
+            border: 1px solid var(--ur-border);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
         }
 
-        /* Top Control Bar */
+        /* Top Control Bar / Header */
         .system-bar {
-            background: #181b1f;
-            border-bottom: 1px solid var(--grafana-border);
-            padding: 12px 18px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--ur-border);
+            padding: 20px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .system-bar h1 {
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--orange-accent);
-            font-family: var(--font-mono);
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .latency-indicator {
-            font-size: 11px;
+            font-size: 12px;
             font-family: var(--font-mono);
+            background: var(--green-bg);
             color: var(--green-accent);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .main-content {
-            padding: 20px;
+            padding: 24px;
         }
 
         /* Stats Strip */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 14px;
+            margin-bottom: 24px;
         }
 
         .stat-box {
-            background: var(--grafana-card);
-            border-left: 3px solid var(--blue-accent);
-            padding: 10px;
-            border-radius: 2px;
+            background: var(--ur-card);
+            border: 1px solid var(--ur-border);
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            position: relative;
+            overflow: hidden;
         }
 
-        .stat-box.alerting { border-left-color: var(--red-accent); }
-        .stat-box.healthy { border-left-color: var(--green-accent); }
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--blue-accent);
+        }
+
+        .stat-box.alerting::before { background: var(--red-accent); }
+        .stat-box.healthy::before { background: var(--green-accent); }
 
         .stat-label {
-            font-size: 10px;
+            font-size: 11px;
             text-transform: uppercase;
             color: var(--text-muted);
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         .stat-value {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             font-family: var(--font-mono);
-            margin-top: 4px;
+            margin-top: 6px;
+            color: #0f172a;
         }
 
         /* Matrix Heatmap */
         .heatmap-panel {
-            background: var(--grafana-card);
-            border: 1px solid var(--grafana-border);
-            padding: 14px;
-            margin-bottom: 20px;
-            border-radius: 2px;
+            background: #f8fafc;
+            border: 1px solid var(--ur-border);
+            padding: 16px;
+            margin-bottom: 24px;
+            border-radius: 8px;
         }
 
         .panel-title {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--text-main);
             text-transform: uppercase;
-            margin-bottom: 10px;
-            font-family: var(--font-mono);
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 6px;
+            letter-spacing: 0.5px;
         }
 
         .matrix-grid {
             display: grid;
             grid-template-columns: repeat(14, 1fr);
-            gap: 4px;
+            gap: 6px;
         }
 
         .matrix-node {
-            height: 12px;
-            background: rgba(86, 166, 75, 0.2);
-            border: 1px solid rgba(86, 166, 75, 0.4);
-            border-radius: 1px;
+            height: 16px;
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            border-radius: 3px;
+            transition: all 0.2s ease;
         }
         .matrix-node.active-pulse {
-            background: var(--orange-accent);
-            box-shadow: 0 0 8px var(--orange-accent);
-            border-color: #fff;
+            background: #f59e0b !important;
+            box-shadow: 0 0 10px #f59e0b;
+            border-color: #d97706 !important;
+            transform: scale(1.1);
         }
 
         /* Log Streaming Layout */
         .log-list {
-            max-height: 260px;
+            max-height: 280px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .log-list::-webkit-scrollbar { width: 4px; }
-        .log-list::-webkit-scrollbar-thumb { background: var(--grafana-border); }
+        .log-list::-webkit-scrollbar { width: 6px; }
+        .log-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
         .log-card {
-            background: #181b1f;
-            border: 1px solid var(--grafana-border);
-            padding: 12px;
+            background: #ffffff;
+            border: 1px solid var(--ur-border);
+            padding: 14px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            border-left: 3px solid var(--red-accent);
+            gap: 8px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            border-left: 4px solid var(--red-accent);
         }
 
         .log-row-top {
@@ -180,7 +207,7 @@
         .log-title {
             font-size: 13px;
             font-weight: 600;
-            font-family: var(--font-mono);
+            color: #0f172a;
         }
 
         .log-time {
@@ -191,66 +218,64 @@
 
         .distance-badge {
             align-self: flex-start;
-            font-size: 10px;
+            font-size: 11px;
             font-family: var(--font-mono);
-            padding: 2px 6px;
-            background: rgba(87, 148, 242, 0.15);
+            padding: 3px 8px;
+            background: var(--blue-bg);
             color: var(--blue-accent);
-            border: 1px solid rgba(87, 148, 242, 0.3);
+            border-radius: 4px;
+            font-weight: 600;
         }
 
         /* Action Controls */
         .control-row {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-top: 20px;
-            align-items: center;
+            margin-top: 24px;
         }
 
         .btn {
-            padding: 10px 16px;
-            font-size: 12px;
+            padding: 12px 16px;
+            font-size: 13px;
             font-weight: 600;
             text-transform: uppercase;
-            font-family: var(--font-mono);
+            letter-spacing: 0.5px;
             cursor: pointer;
-            border-radius: 2px;
+            border-radius: 6px;
             transition: all 0.15s ease;
+            border: none;
         }
 
         .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--grafana-border);
+            background: #f1f5f9;
+            border: 1px solid var(--ur-border);
             color: var(--text-main);
         }
         .btn-secondary:hover {
-            background: var(--grafana-card);
-            border-color: var(--text-muted);
+            background: #e2e8f0;
         }
 
         .btn-danger {
-            background: rgba(242, 73, 92, 0.1);
-            border: 1px solid var(--red-accent);
-            color: var(--red-accent);
-            width: 100%;
-        }
-        .btn-danger:hover {
             background: var(--red-accent);
             color: #fff;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+        }
+        .btn-danger:hover {
+            background: #dc2626;
         }
 
         /* Auth Screen Design */
         .auth-container {
-            padding: 30px;
-            max-width: 400px;
+            padding: 36px;
+            max-width: 420px;
             width: 100%;
-            background: var(--grafana-panel);
-            border: 1px solid var(--grafana-border);
+            background: var(--ur-card);
+            border: 1px solid var(--ur-border);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
         }
 
         .input-wrapper {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .input-wrapper label {
@@ -259,20 +284,24 @@
             text-transform: uppercase;
             color: var(--text-muted);
             margin-bottom: 6px;
-            font-family: var(--font-mono);
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         .input-wrapper input {
             width: 100%;
-            padding: 10px;
-            background: var(--grafana-bg);
-            border: 1px solid var(--grafana-border);
-            color: #fff;
-            font-size: 13px;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid var(--ur-border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 14px;
         }
         .input-wrapper input:focus {
             outline: none;
-            border-color: var(--orange-accent);
+            border-color: var(--blue-accent);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
         }
 
         .hidden { display: none !important; }
@@ -281,7 +310,7 @@
 <body>
 
     <div id="login-form" class="auth-container">
-        <h1 style="font-size: 14px; color: var(--orange-accent); font-family: var(--font-mono); margin-bottom: 20px; letter-spacing: 1px;">// CONSOLE ACCESS LOCK</h1>
+        <h1 style="font-size: 15px; color: #0f172a; margin-bottom: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px;">🔒 TAFTALIDZE // SECURE LOGIN</h1>
         <div class="input-wrapper">
             <label>Operator Node Email</label>
             <input type="email" id="email" placeholder="your@e-mail.com">
@@ -290,13 +319,13 @@
             <label>Cryptographic Phrase</label>
             <input type="password" id="password" placeholder="••••••••">
         </div>
-        <button id="auth-submit-btn" class="btn btn-secondary" style="width: 100%; border-color: var(--orange-accent); color: var(--orange-accent);">Initialize System Validation</button>
+        <button id="auth-submit-btn" class="btn btn-secondary" style="width: 100%; background: #0f172a; color: #fff; border: none;">Initialize System Validation</button>
     </div>
 
     <div id="dashboard" class="dashboard-wrapper hidden">
         <div class="system-bar">
-            <h1>📊 TAFTA HQ // SECURITY MONITOR</h1>
-            <div class="latency-indicator">🌐 Live Sync // 4.2k Link</div>
+            <h1>🟢 Taftalidze Security Hub</h1>
+            <div class="latency-indicator">● Operational // Live Sync</div>
         </div>
 
         <div class="main-content">
@@ -305,10 +334,10 @@
                     <div class="stat-label">Total Alarms</div>
                     <div class="stat-value" style="color: var(--red-accent);" id="total-alarms-count">0</div>
                 </div>
-<div class="stat-box healthy">
-    <div class="stat-label">Uptime Metric</div>
-    <div class="stat-value" style="color: var(--green-accent);" id="uptime-metric-value">0.0%</div>
-</div>
+                <div class="stat-box healthy">
+                    <div class="stat-label">Uptime Metric</div>
+                    <div class="stat-value" style="color: var(--green-accent);" id="uptime-metric-value">0.0%</div>
+                </div>
                 <div class="stat-box">
                     <div class="stat-label">Sys Kernel</div>
                     <div class="stat-value" style="color: var(--blue-accent);">v2.9</div>
@@ -317,8 +346,8 @@
 
             <div class="heatmap-panel">
                 <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <div><span style="color: var(--orange-accent);">■</span> Spatial Intrusion Density Map</div>
-                    <div style="font-size: 9px; color: var(--text-muted);">[0cm ---> 140cm]</div>
+                    <div><span style="color: var(--green-accent);">■</span> Spatial Intrusion Density Map</div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">[0cm ---> 140cm]</div>
                 </div>
                 <div class="matrix-grid" id="spatial-matrix-grid">
                     <div class="matrix-node"></div><div class="matrix-node"></div><div class="matrix-node"></div>
@@ -334,9 +363,9 @@
                 </div>
             </div>
 
-            <div class="panel-title" style="margin-left: 4px; display: flex; justify-content: space-between;">
+            <div class="panel-title" style="margin-left: 2px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <span>📋 Live Telemetry Logs</span>
-                <button id="audio-toggle-btn" class="btn btn-secondary" style="padding: 2px 8px; font-size: 9px; border-radius: 2px;">
+                <button id="audio-toggle-btn" class="btn btn-secondary" style="padding: 4px 10px; font-size: 10px; border-radius: 4px;">
                     🔈 Audio Disabled
                 </button>
             </div>
@@ -413,69 +442,61 @@
         }
 
         // --- 4. DATA RETRIEVAL & RENDERING PIPELINES ---
-async function fetchLogs() {
-    try {
-        // 1. Fetch exact total counts and the 5 latest logs
-        const { data: logs, error, count } = await _supabase
-            .from('logs')
-            .select('*', { count: 'exact' })
-            .order('created_at', { ascending: false })
-            .limit(5);
+        async function fetchLogs() {
+            try {
+                const { data: logs, error, count } = await _supabase
+                    .from('logs')
+                    .select('*', { count: 'exact' })
+                    .order('created_at', { ascending: false })
+                    .limit(5);
 
-        if (error) throw error;
-        
-        document.getElementById('total-alarms-count').innerText = count !== null ? count : 0;
-        renderLogs(logs);
+                if (error) throw error;
+                
+                document.getElementById('total-alarms-count').innerText = count !== null ? count : 0;
+                renderLogs(logs);
 
-        // 2. Fetch all logs from the past 24 hours to calculate true Uptime
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { count: dailyLogCount, error: uptimeError } = await _supabase
-            .from('logs')
-            .select('*', { count: 'exact', head: true })
-            .gte('created_at', oneDayAgo);
+                const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+                const { count: dailyLogCount, error: uptimeError } = await _supabase
+                    .from('logs')
+                    .select('*', { count: 'exact', head: true })
+                    .gte('created_at', oneDayAgo);
 
-        if (!uptimeError) {
-            calculateRealUptime(dailyLogCount);
+                if (!uptimeError) {
+                    calculateRealUptime(dailyLogCount);
+                }
+
+            } catch (err) {
+                console.error("Error drawing data panel:", err.message);
+            }
         }
 
-    } catch (err) {
-        console.error("Error drawing data panel:", err.message);
-    }
-}
+        function calculateRealUptime(actualLogsReceived) {
+            const expectedLogsPerDay = 288; 
+            
+            if (actualLogsReceived === 0) {
+                document.getElementById('uptime-metric-value').innerText = "0.0%";
+                return;
+            }
 
-function calculateRealUptime(actualLogsReceived) {
-    // ASSUMPTION: If your ESP32 drops a heartbeat/ping log once every 5 minutes, 
-    // it should ideally send 288 logs in a 24-hour cycle (12 logs/hour * 24).
-    const expectedLogsPerDay = 288; 
-    
-    if (actualLogsReceived === 0) {
-        document.getElementById('uptime-metric-value').innerText = "0.0%";
-        return;
-    }
+            let uptimePercentage = (actualLogsReceived / expectedLogsPerDay) * 100;
+            if (uptimePercentage > 100) uptimePercentage = 100;
+            
+            const finalUptimeStr = uptimePercentage.toFixed(1) + "%";
+            const uptimeElement = document.getElementById('uptime-metric-value');
+            
+            uptimeElement.innerText = finalUptimeStr;
 
-    // Calculate ratio
-    let uptimePercentage = (actualLogsReceived / expectedLogsPerDay) * 100;
-    
-    // Cap it at 100% in case extra motion events happen frequently
-    if (uptimePercentage > 100) uptimePercentage = 100;
-    
-    const finalUptimeStr = uptimePercentage.toFixed(1) + "%";
-    const uptimeElement = document.getElementById('uptime-metric-value');
-    
-    uptimeElement.innerText = finalUptimeStr;
-
-    // Dynamically shift color themes if things look bad!
-    const parentBox = uptimeElement.closest('.stat-box');
-    if (uptimePercentage < 85) {
-        parentBox.classList.remove('healthy');
-        parentBox.classList.add('alerting');
-        uptimeElement.style.color = "var(--red-accent)";
-    } else {
-        parentBox.classList.remove('alerting');
-        parentBox.classList.add('healthy');
-        uptimeElement.style.color = "var(--green-accent)";
-    }
-}
+            const parentBox = uptimeElement.closest('.stat-box');
+            if (uptimePercentage < 85) {
+                parentBox.classList.remove('healthy');
+                parentBox.classList.add('alerting');
+                uptimeElement.style.color = "var(--red-accent)";
+            } else {
+                parentBox.classList.remove('alerting');
+                parentBox.classList.add('healthy');
+                uptimeElement.style.color = "var(--green-accent)";
+            }
+        }
 
         function renderLogs(logs) {
             const container = document.getElementById('log-container');
@@ -517,28 +538,27 @@ function calculateRealUptime(actualLogsReceived) {
                 btn.innerHTML = "🔊 Audio Active";
                 btn.style.borderColor = "var(--green-accent)";
                 btn.style.color = "var(--green-accent)";
+                btn.style.background = "var(--green-bg)";
             } else {
                 isAudioMuted = true;
                 btn.innerHTML = "🔈 Audio Disabled";
-                btn.style.borderColor = "var(--grafana-border)";
+                btn.style.borderColor = "var(--ur-border)";
                 btn.style.color = "var(--text-main)";
+                btn.style.background = "#f1f5f9";
             }
         }
 
         // --- 6. REAL-TIME EVENT SYNCHRONIZATION ---
         function getColumnFromDistance(distCm) {
             if (!distCm || isNaN(distCm)) return 0;
-            // Matches columns 0 to 13 dynamically based on 10cm steps
             let col = Math.floor(distCm / 10);
             return Math.min(13, col);
         }
 
         function pulseNodeByDistance(colIndex) {
             const nodes = document.querySelectorAll('.matrix-node');
-            
-            // Map distance columns to index ranges (0-13 mapping)
             const primaryNode = nodes[colIndex];
-            const lowerNode = nodes[colIndex + 14]; // Pulse secondary vertical row elements
+            const lowerNode = nodes[colIndex + 14];
             
             if (primaryNode) {
                 primaryNode.classList.add('active-pulse');
@@ -558,9 +578,8 @@ function calculateRealUptime(actualLogsReceived) {
                     { event: 'INSERT', schema: 'public', table: 'logs' }, 
                     (payload) => {
                         if (!isAudioMuted) playSystemChime();
-                        fetchLogs(); 
+                        fetchLogs();
                         
-                        // Parse real-time database payload metrics
                         const targetCol = getColumnFromDistance(payload.new.distance_cm);
                         pulseNodeByDistance(targetCol);
                     }
@@ -586,12 +605,10 @@ function calculateRealUptime(actualLogsReceived) {
 
         // --- 8. GLOBAL EVENT HOOKS MANAGEMENT ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Check for pre-existing verified terminal context sessions
             _supabase.auth.getSession().then(({ data: { session } }) => {
                 if (session) showDashboard();
             });
 
-            // Interactive Event Binding
             document.getElementById('auth-submit-btn').addEventListener('click', login);
             document.getElementById('audio-toggle-btn').addEventListener('click', toggleDashboardAudio);
             document.getElementById('hardware-restart-btn').addEventListener('click', triggerRemoteRestart);
