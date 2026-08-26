@@ -3,33 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taftalidze Security Hub - Cyber Dark Edition</title>
+    <title>Taftalidze Security Hub - Cyber Liquid Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-main: #07090e;
-            --bg-subtle: #0d111a;
-            --surface-card: #131b2e;
-            --surface-elevated: #1a243d;
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-glow: rgba(56, 189, 248, 0.25);
+            /* Space Violet & Dark Blue Core */
+            --bg-deep: #070614;
+            --bg-surface: #0f0c24;
+            --surface-card: rgba(22, 18, 52, 0.65);
+            --surface-elevated: rgba(33, 27, 76, 0.75);
             
-            --text-main: #f8fafc;
-            --text-muted: #64748b;
-            --text-dim: #94a3b8;
+            /* Matrix Green Neon Palette */
+            --matrix-green: #00ff66;
+            --matrix-glow: rgba(0, 255, 102, 0.25);
+            --matrix-dark: #023816;
 
-            /* Neon Accent Palette */
-            --cyan-accent: #38bdf8;
-            --cyan-glow: rgba(56, 189, 248, 0.15);
-            --green-accent: #10b981;
-            --green-glow: rgba(16, 185, 129, 0.15);
-            --red-accent: #f43f5e;
-            --red-glow: rgba(244, 63, 94, 0.15);
-            --amber-accent: #fbbf24;
-            --amber-glow: rgba(251, 191, 36, 0.2);
+            /* Space Violet & Cyan Accents */
+            --violet-accent: #a855f7;
+            --violet-glow: rgba(168, 85, 247, 0.3);
+            --blue-accent: #3b82f6;
+            --red-accent: #ff2a5f;
+            --red-glow: rgba(255, 42, 95, 0.3);
+
+            --border-subtle: rgba(168, 85, 247, 0.18);
+            --border-matrix: rgba(0, 255, 102, 0.3);
+
+            --text-main: #f3f4f6;
+            --text-muted: #94a3b8;
+            --text-matrix: #6ee7b7;
 
             --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
         * {
@@ -40,7 +44,7 @@
         }
 
         body {
-            background-color: var(--bg-main);
+            background-color: var(--bg-deep);
             color: var(--text-main);
             min-height: 100vh;
             padding: 24px;
@@ -48,36 +52,38 @@
             justify-content: center;
             align-items: center;
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 70%),
-                radial-gradient(circle at 80% 100%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+                radial-gradient(circle at 20% 10%, rgba(124, 58, 237, 0.18) 0%, transparent 40%),
+                radial-gradient(circle at 80% 90%, rgba(0, 255, 102, 0.1) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.8) 0%, transparent 100%);
         }
 
         .dashboard-wrapper {
             width: 100%;
-            max-width: 620px;
+            max-width: 640px;
             background: var(--surface-card);
             border: 1px solid var(--border-subtle);
-            border-radius: 16px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.1);
             overflow: hidden;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
 
         /* Header Bar */
         .system-bar {
-            background: rgba(13, 17, 26, 0.8);
+            background: rgba(10, 8, 26, 0.85);
             border-bottom: 1px solid var(--border-subtle);
-            padding: 18px 24px;
+            padding: 20px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .system-bar h1 {
-            font-size: 15px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 800;
             color: var(--text-main);
-            letter-spacing: 0.5px;
+            letter-spacing: 1.5px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -86,25 +92,26 @@
         .system-bar h1::before {
             content: '';
             display: inline-block;
-            width: 8px;
-            height: 8px;
+            width: 9px;
+            height: 9px;
             border-radius: 50%;
-            background: var(--cyan-accent);
-            box-shadow: 0 0 10px var(--cyan-accent);
+            background: var(--matrix-green);
+            box-shadow: 0 0 12px var(--matrix-green);
         }
 
         .latency-indicator {
             font-size: 11px;
             font-family: var(--font-mono);
-            background: var(--green-glow);
-            color: var(--green-accent);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(0, 255, 102, 0.08);
+            color: var(--matrix-green);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 1px solid var(--border-matrix);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            box-shadow: 0 0 15px var(--matrix-glow);
         }
 
         .latency-indicator::before {
@@ -112,76 +119,73 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: var(--green-accent);
-            animation: pulse-ring 2s infinite;
+            background: var(--matrix-green);
+            animation: matrix-pulse 1.8s infinite ease-in-out;
         }
 
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.8; }
+        @keyframes matrix-pulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.3); }
         }
 
         .main-content {
-            padding: 24px;
+            padding: 28px;
         }
 
-        /* Metric Cards */
+        /* Stats Section */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            gap: 14px;
             margin-bottom: 24px;
         }
 
         .stat-box {
-            background: var(--bg-subtle);
+            background: var(--surface-elevated);
             border: 1px solid var(--border-subtle);
-            padding: 14px 16px;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            position: relative;
+            padding: 16px;
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .stat-box:hover {
-            border-color: var(--border-glow);
-            transform: translateY(-2px);
+            border-color: var(--violet-accent);
+            box-shadow: 0 8px 20px var(--violet-glow);
+            transform: translateY(-3px);
         }
 
         .stat-label {
             font-size: 10px;
             text-transform: uppercase;
             color: var(--text-muted);
-            font-weight: 700;
-            letter-spacing: 0.8px;
+            font-weight: 800;
+            letter-spacing: 1px;
         }
 
         .stat-value {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
             font-family: var(--font-mono);
-            margin-top: 6px;
+            margin-top: 8px;
         }
 
-        /* Matrix Heatmap Panel */
+        /* Matrix Map Panel */
         .heatmap-panel {
-            background: var(--bg-subtle);
+            background: var(--bg-surface);
             border: 1px solid var(--border-subtle);
-            padding: 16px;
+            padding: 20px;
             margin-bottom: 24px;
-            border-radius: 12px;
+            border-radius: 18px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
         .panel-title {
             font-size: 11px;
-            font-weight: 700;
-            color: var(--text-dim);
+            font-weight: 800;
+            color: var(--text-muted);
             text-transform: uppercase;
-            margin-bottom: 12px;
-            letter-spacing: 0.8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            margin-bottom: 14px;
+            letter-spacing: 1.2px;
         }
 
         .matrix-grid {
@@ -191,47 +195,48 @@
         }
 
         .matrix-node {
-            height: 18px;
-            background: rgba(16, 185, 129, 0.08);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 4px;
-            transition: all 0.3s ease;
+            height: 20px;
+            background: rgba(0, 255, 102, 0.05);
+            border: 1px solid rgba(0, 255, 102, 0.15);
+            border-radius: 6px;
+            transition: all 0.4s ease;
         }
 
         .matrix-node.active-pulse {
-            background: var(--amber-accent) !important;
-            box-shadow: 0 0 14px var(--amber-accent);
+            background: var(--matrix-green) !important;
+            box-shadow: 0 0 16px var(--matrix-green), 0 0 30px var(--matrix-green);
             border-color: #ffffff !important;
-            transform: scale(1.15);
+            transform: scale(1.2);
+            z-index: 2;
         }
 
-        /* Log List Stream */
+        /* Log Feed */
         .log-list {
-            max-height: 270px;
+            max-height: 260px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .log-list::-webkit-scrollbar { width: 4px; }
-        .log-list::-webkit-scrollbar-thumb { background: var(--surface-elevated); border-radius: 4px; }
+        .log-list::-webkit-scrollbar-thumb { background: var(--violet-accent); border-radius: 4px; }
 
         .log-card {
-            background: var(--bg-subtle);
+            background: var(--surface-elevated);
             border: 1px solid var(--border-subtle);
-            padding: 14px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            border-radius: 10px;
-            border-left: 3px solid var(--red-accent);
-            transition: all 0.2s ease;
+            gap: 10px;
+            border-radius: 14px;
+            border-left: 4px solid var(--red-accent);
+            transition: all 0.3s ease;
         }
 
         .log-card:hover {
-            border-color: rgba(244, 63, 94, 0.4);
-            background: var(--surface-elevated);
+            border-color: var(--violet-accent);
+            transform: translateX(4px);
         }
 
         .log-row-top {
@@ -242,7 +247,7 @@
 
         .log-title {
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .log-time {
@@ -255,69 +260,106 @@
             align-self: flex-start;
             font-size: 11px;
             font-family: var(--font-mono);
-            padding: 3px 10px;
-            background: var(--cyan-glow);
-            color: var(--cyan-accent);
-            border-radius: 6px;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            font-weight: 600;
-        }
-
-        /* Controls & Buttons */
-        .control-row {
-            margin-top: 24px;
-        }
-
-        .btn {
-            padding: 12px 18px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            cursor: pointer;
+            padding: 4px 12px;
+            background: rgba(0, 255, 102, 0.1);
+            color: var(--matrix-green);
             border-radius: 8px;
-            transition: all 0.2s ease;
-            border: none;
+            border: 1px solid var(--border-matrix);
+            font-weight: 700;
         }
 
-        .btn-secondary {
-            background: var(--surface-elevated);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-main);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--border-glow);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(225, 29, 72, 0.3));
-            border: 1px solid var(--red-accent);
-            color: var(--red-accent);
+        /* Liquid Button Styling */
+        .liquid-btn-wrapper {
+            position: relative;
+            display: inline-block;
             width: 100%;
-            box-shadow: 0 4px 15px var(--red-glow);
+            overflow: hidden;
+            border-radius: 14px;
         }
 
-        .btn-danger:hover {
-            background: var(--red-accent);
+        .btn-liquid {
+            position: relative;
+            width: 100%;
+            padding: 14px 24px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
             color: #ffffff;
-            box-shadow: 0 0 20px rgba(244, 63, 94, 0.6);
+            background: linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            cursor: pointer;
+            z-index: 1;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .btn-liquid::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--matrix-green) 0%, rgba(168, 85, 247, 0.8) 60%, transparent 100%);
+            border-radius: 40%;
+            transform: translate(-50%, 0) rotate(0deg);
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .btn-liquid:hover::before {
+            top: -40%;
+            transform: translate(-50%, 0) rotate(360deg);
+            opacity: 0.85;
+        }
+
+        .btn-liquid:hover {
+            color: #000000;
+            font-weight: 900;
+            border-color: var(--matrix-green);
+            box-shadow: 0 0 25px var(--matrix-glow), 0 0 10px var(--matrix-green);
+        }
+
+        .btn-danger-liquid {
+            background: linear-gradient(135deg, #881337 0%, #31121f 100%);
+            border-color: rgba(255, 42, 95, 0.4);
+            color: var(--red-accent);
+        }
+
+        .btn-danger-liquid::before {
+            background: radial-gradient(circle, var(--red-accent) 0%, var(--violet-accent) 70%, transparent 100%);
+        }
+
+        .btn-danger-liquid:hover {
+            color: #ffffff;
+            box-shadow: 0 0 30px var(--red-glow);
+        }
+
+        .btn-pill {
+            width: auto;
+            padding: 6px 14px;
+            font-size: 10px;
+            border-radius: 20px;
         }
 
         /* Auth Panel */
         .auth-container {
-            padding: 36px;
-            max-width: 420px;
+            padding: 40px;
+            max-width: 440px;
             width: 100%;
             background: var(--surface-card);
             border: 1px solid var(--border-subtle);
-            border-radius: 16px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 30px var(--violet-glow);
+            backdrop-filter: blur(20px);
         }
 
         .input-wrapper {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
 
         .input-wrapper label {
@@ -325,26 +367,26 @@
             font-size: 10px;
             text-transform: uppercase;
             color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 700;
-            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            font-weight: 800;
+            letter-spacing: 1px;
         }
 
         .input-wrapper input {
             width: 100%;
-            padding: 12px 14px;
-            background: var(--bg-subtle);
+            padding: 14px 16px;
+            background: var(--bg-surface);
             border: 1px solid var(--border-subtle);
-            border-radius: 8px;
+            border-radius: 12px;
             color: var(--text-main);
             font-size: 14px;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .input-wrapper input:focus {
             outline: none;
-            border-color: var(--cyan-accent);
-            box-shadow: 0 0 12px var(--cyan-glow);
+            border-color: var(--matrix-green);
+            box-shadow: 0 0 15px var(--matrix-glow);
             background: var(--surface-elevated);
         }
 
@@ -354,21 +396,23 @@
 <body>
 
     <div id="login-form" class="auth-container">
-        <h1 style="font-size: 15px; color: var(--text-main); margin-bottom: 24px; font-weight: 700; letter-spacing: 1px;">🔐 CONSOLE ACCESS LOCK</h1>
+        <h1 style="font-size: 16px; color: var(--text-main); margin-bottom: 28px; font-weight: 800; letter-spacing: 1.5px; text-align: center;">
+            🔮 CYBER SPACE ACCESS
+        </h1>
         <div class="input-wrapper">
-            <label>Operator Node Email</label>
-            <input type="email" id="email" placeholder="your@e-mail.com">
+            <label>Operator ID</label>
+            <input type="email" id="email" placeholder="operator@space.net">
         </div>
         <div class="input-wrapper">
-            <label>Cryptographic Phrase</label>
+            <label>Cryptographic Cipher</label>
             <input type="password" id="password" placeholder="••••••••">
         </div>
-        <button id="auth-submit-btn" class="btn btn-secondary" style="width: 100%; border-color: var(--cyan-accent); color: var(--cyan-accent);">Initialize System Validation</button>
+        <button id="auth-submit-btn" class="btn-liquid">INITIALIZE CONSOLE HANDSHAKE</button>
     </div>
 
     <div id="dashboard" class="dashboard-wrapper hidden">
         <div class="system-bar">
-            <h1>TAFTA HQ // SECURITY MONITOR</h1>
+            <h1>TAFTA HQ // LIQUID SECURITY NODE</h1>
             <div class="latency-indicator">LIVE SYNC</div>
         </div>
 
@@ -380,17 +424,17 @@
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Uptime Metric</div>
-                    <div class="stat-value" style="color: var(--green-accent);" id="uptime-metric-value">0.0%</div>
+                    <div class="stat-value" style="color: var(--matrix-green);" id="uptime-metric-value">0.0%</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Sys Kernel</div>
-                    <div class="stat-value" style="color: var(--cyan-accent);">v2.9</div>
+                    <div class="stat-value" style="color: var(--violet-accent);">v3.0</div>
                 </div>
             </div>
 
             <div class="heatmap-panel">
-                <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <div><span style="color: var(--cyan-accent);">■</span> Spatial Intrusion Density Map</div>
+                <div class="panel-title" style="display: flex; justify-space-between; align-items: center; width: 100%;">
+                    <div><span style="color: var(--matrix-green);">■</span> Proximity Intrusion Matrix</div>
                     <div style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">[0cm ---> 140cm]</div>
                 </div>
                 <div class="matrix-grid" id="spatial-matrix-grid">
@@ -407,17 +451,17 @@
                 </div>
             </div>
 
-            <div class="panel-title" style="margin-left: 2px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <span>📋 Live Telemetry Logs</span>
-                <button id="audio-toggle-btn" class="btn btn-secondary" style="padding: 4px 10px; font-size: 10px;">
+            <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span>📋 Live Spatial Telemetry Stream</span>
+                <button id="audio-toggle-btn" class="btn-liquid btn-pill">
                     🔈 Audio Disabled
                 </button>
             </div>
             
             <div id="log-container" class="log-list"></div>
 
-            <div class="control-row">
-                <button id="hardware-restart-btn" class="btn btn-danger">
+            <div style="margin-top: 24px;">
+                <button id="hardware-restart-btn" class="btn-liquid btn-danger-liquid">
                     Execute Remote Hardware Reset Sequence
                 </button>
             </div>
@@ -425,7 +469,7 @@
     </div>
 
     <script>
-        // --- 1. SUPABASE ACCREDITATION CREDENTIALS ---
+        // --- 1. SUPABASE CREDENTIALS ---
         const SUPABASE_PROJECT_ID = "nlnininesnenehyoshjw";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sbmluaW5lc25lbmVoeW9zaGp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAwMjUsImV4cCI6MjA5NzQyNjAyNX0.01yLEIL2-IoOV401Tw_7f5jEvoUocTOguQSPYazxVGk";
         
@@ -434,7 +478,7 @@
             SUPABASE_ANON_KEY
         );
 
-        // --- 2. NATIVE AUDIO SYNTHESIZER ---
+        // --- 2. SYNTHESIZER ENGINE ---
         let isAudioMuted = true;
 
         function playSystemChime() {
@@ -447,34 +491,34 @@
                 gainNode.connect(audioCtx.destination);
 
                 oscillator.type = 'sine'; 
-                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
+                oscillator.frequency.setValueAtTime(987.77, audioCtx.currentTime); // B5 note
                 
-                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.25);
 
                 oscillator.start(audioCtx.currentTime);
-                oscillator.stop(audioCtx.currentTime + 0.2);
+                oscillator.stop(audioCtx.currentTime + 0.25);
             } catch (e) {
-                console.warn("Synth engine busy:", e.message);
+                console.warn("Audio synthesis unavailable:", e.message);
             }
         }
 
-        // --- 3. SECURITY AUTHENTICATION HANDLERS ---
+        // --- 3. AUTHENTICATION LOGIC ---
         async function login() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            if(!email || !password) return alert("Please fill credentials.");
+            if(!email || !password) return alert("Credentials required.");
 
             try {
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
                 if (error) {
-                    alert("Authorization Terminated: " + error.message);
+                    alert("Authentication Failure: " + error.message);
                 } else {
                     showDashboard();
                 }
             } catch(err) {
-                alert("Connection handshake failed.");
+                alert("Connection failed.");
             }
         }
 
@@ -485,7 +529,7 @@
             subscribeToLiveUpdates();
         }
 
-        // --- 4. DATA RETRIEVAL & RENDERING PIPELINES ---
+        // --- 4. DATA PIPELINE ---
         async function fetchLogs() {
             try {
                 const { data: logs, error, count } = await _supabase
@@ -510,7 +554,7 @@
                 }
 
             } catch (err) {
-                console.error("Error drawing data panel:", err.message);
+                console.error("Data pipeline error:", err.message);
             }
         }
 
@@ -525,22 +569,20 @@
             let uptimePercentage = (actualLogsReceived / expectedLogsPerDay) * 100;
             if (uptimePercentage > 100) uptimePercentage = 100;
             
-            const finalUptimeStr = uptimePercentage.toFixed(1) + "%";
-            const uptimeElement = document.getElementById('uptime-metric-value');
-            
-            uptimeElement.innerText = finalUptimeStr;
+            const uptimeElem = document.getElementById('uptime-metric-value');
+            uptimeElem.innerText = uptimePercentage.toFixed(1) + "%";
 
             if (uptimePercentage < 85) {
-                uptimeElement.style.color = "var(--red-accent)";
+                uptimeElem.style.color = "var(--red-accent)";
             } else {
-                uptimeElement.style.color = "var(--green-accent)";
+                uptimeElem.style.color = "var(--matrix-green)";
             }
         }
 
         function renderLogs(logs) {
             const container = document.getElementById('log-container');
             if (!logs || logs.length === 0) {
-                container.innerHTML = `<p style="color:var(--text-muted); text-align:center; font-size:12px; font-family:var(--font-mono); margin:30px 0;">NO CONSOLE ALARMS DATA FOUND</p>`;
+                container.innerHTML = `<p style="color:var(--text-muted); text-align:center; font-size:12px; font-family:var(--font-mono); margin:30px 0;">NO TELEMETRY EVENTS RECORDED</p>`;
                 return;
             }
 
@@ -548,14 +590,13 @@
                 const dateObj = new Date(log.created_at);
                 const displayDate = dateObj.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
                 const displayTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                
                 const distanceValue = log.distance_cm ? `${log.distance_cm} cm` : 'Null Vector';
 
                 return `
                     <div class="log-card">
                         <div class="log-row-top">
                             <div class="log-title">
-                                <span style="color:var(--red-accent);">⚠️ INTRUSION EVENT DETECTED</span>
+                                <span style="color:var(--red-accent);">⚠️ INTRUSION DETECTED</span>
                             </div>
                             <div class="log-time">${displayDate} @ ${displayTime}</div>
                         </div>
@@ -567,7 +608,7 @@
             }).join('');
         }
 
-        // --- 5. AUDIO PERSISTENCE CONTROLLERS ---
+        // --- 5. AUDIO INTERACTION ---
         function toggleDashboardAudio() {
             const btn = document.getElementById('audio-toggle-btn');
             
@@ -575,19 +616,19 @@
                 playSystemChime();
                 isAudioMuted = false;
                 btn.innerHTML = "🔊 Audio Active";
-                btn.style.borderColor = "var(--green-accent)";
-                btn.style.color = "var(--green-accent)";
-                btn.style.background = "var(--green-glow)";
+                btn.style.color = "#000000";
+                btn.style.background = "var(--matrix-green)";
+                btn.style.boxShadow = "0 0 15px var(--matrix-glow)";
             } else {
                 isAudioMuted = true;
-                btn.innerHTML = "🔈 Audio Disabled";
-                btn.style.borderColor = "var(--border-subtle)";
-                btn.style.color = "var(--text-main)";
-                btn.style.background = "var(--surface-elevated)";
+                btn.innerHTML = "i Audio Disabled";
+                btn.style.color = "#ffffff";
+                btn.style.background = "linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)";
+                btn.style.boxShadow = "none";
             }
         }
 
-        // --- 6. REAL-TIME EVENT SYNCHRONIZATION ---
+        // --- 6. REAL-TIME EVENT HANDLER ---
         function getColumnFromDistance(distCm) {
             if (!distCm || isNaN(distCm)) return 0;
             let col = Math.floor(distCm / 10);
@@ -626,9 +667,9 @@
                 .subscribe();
         }
 
-        // --- 7. REMOTE PROTOCOLS ---
+        // --- 7. REMOTE COMMANDS ---
         async function triggerRemoteRestart() {
-            if (!confirm("Confirm immediate remote firmware hardware execution restart for ESP32?")) return;
+            if (!confirm("Confirm execution of remote hardware restart sequence?")) return;
 
             try {
                 const { error } = await _supabase
@@ -636,13 +677,13 @@
                     .insert([{ command: 'RESTART', processed: false }]);
 
                 if (error) throw error;
-                alert("Execution sequence successfully queued into database pipeline.");
+                alert("Restart command successfully dispatched.");
             } catch (err) {
-                alert("Failed to push instructions line: " + err.message);
+                alert("Dispatch failed: " + err.message);
             }
         }
 
-        // --- 8. GLOBAL EVENT HOOKS MANAGEMENT ---
+        // --- 8. INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             _supabase.auth.getSession().then(({ data: { session } }) => {
                 if (session) showDashboard();
