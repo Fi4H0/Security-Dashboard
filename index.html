@@ -3,26 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taftalidze Security Hub - UptimeRobot Edition</title>
+    <title>Taftalidze Security Hub - Cyber Dark Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --ur-bg: #f4f6f9;
-            --ur-card: #ffffff;
-            --ur-border: #e2e8f0;
-            --text-main: #1e293b;
+            --bg-main: #07090e;
+            --bg-subtle: #0d111a;
+            --surface-card: #131b2e;
+            --surface-elevated: #1a243d;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(56, 189, 248, 0.25);
+            
+            --text-main: #f8fafc;
             --text-muted: #64748b;
-            
+            --text-dim: #94a3b8;
+
+            /* Neon Accent Palette */
+            --cyan-accent: #38bdf8;
+            --cyan-glow: rgba(56, 189, 248, 0.15);
             --green-accent: #10b981;
-            --green-bg: #ecfdf5;
-            --red-accent: #ef4444;
-            --red-bg: #fef2f2;
-            --blue-accent: #0284c7;
-            --blue-bg: #e0f2fe;
-            --orange-accent: #f59e0b;
-            
-            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            --green-glow: rgba(16, 185, 129, 0.15);
+            --red-accent: #f43f5e;
+            --red-glow: rgba(244, 63, 94, 0.15);
+            --amber-accent: #fbbf24;
+            --amber-glow: rgba(251, 191, 36, 0.2);
+
+            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
         }
 
         * {
@@ -33,125 +40,148 @@
         }
 
         body {
-            background-color: var(--ur-bg);
+            background-color: var(--bg-main);
             color: var(--text-main);
             min-height: 100vh;
             padding: 24px;
             display: flex;
             justify-content: center;
             align-items: center;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 70%),
+                radial-gradient(circle at 80% 100%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
         }
 
         .dashboard-wrapper {
             width: 100%;
-            max-width: 640px;
-            background: var(--ur-card);
-            border: 1px solid var(--ur-border);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            max-width: 620px;
+            background: var(--surface-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.1);
             overflow: hidden;
+            backdrop-filter: blur(12px);
         }
 
-        /* Top Control Bar / Header */
+        /* Header Bar */
         .system-bar {
-            background: #ffffff;
-            border-bottom: 1px solid var(--ur-border);
-            padding: 20px 24px;
+            background: rgba(13, 17, 26, 0.8);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 18px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .system-bar h1 {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
-            color: #0f172a;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+        }
+
+        .system-bar h1::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--cyan-accent);
+            box-shadow: 0 0 10px var(--cyan-accent);
         }
 
         .latency-indicator {
-            font-size: 12px;
+            font-size: 11px;
             font-family: var(--font-mono);
-            background: var(--green-bg);
+            background: var(--green-glow);
             color: var(--green-accent);
-            padding: 4px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
             font-weight: 600;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .latency-indicator::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green-accent);
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
         }
 
         .main-content {
             padding: 24px;
         }
 
-        /* Stats Strip */
+        /* Metric Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
+            gap: 12px;
             margin-bottom: 24px;
         }
 
         .stat-box {
-            background: var(--ur-card);
-            border: 1px solid var(--ur-border);
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-subtle);
+            padding: 14px 16px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
             position: relative;
-            overflow: hidden;
         }
 
-        .stat-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--blue-accent);
+        .stat-box:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-2px);
         }
-
-        .stat-box.alerting::before { background: var(--red-accent); }
-        .stat-box.healthy::before { background: var(--green-accent); }
 
         .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
             color: var(--text-muted);
             font-weight: 700;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
         }
 
         .stat-value {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             font-family: var(--font-mono);
             margin-top: 6px;
-            color: #0f172a;
         }
 
-        /* Matrix Heatmap */
+        /* Matrix Heatmap Panel */
         .heatmap-panel {
-            background: #f8fafc;
-            border: 1px solid var(--ur-border);
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-subtle);
             padding: 16px;
             margin-bottom: 24px;
-            border-radius: 8px;
+            border-radius: 12px;
         }
 
         .panel-title {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            color: var(--text-main);
+            color: var(--text-dim);
             text-transform: uppercase;
             margin-bottom: 12px;
+            letter-spacing: 0.8px;
             display: flex;
             align-items: center;
             gap: 6px;
-            letter-spacing: 0.5px;
         }
 
         .matrix-grid {
@@ -161,41 +191,47 @@
         }
 
         .matrix-node {
-            height: 16px;
-            background: #d1fae5;
-            border: 1px solid #10b981;
-            border-radius: 3px;
-            transition: all 0.2s ease;
-        }
-        .matrix-node.active-pulse {
-            background: #f59e0b !important;
-            box-shadow: 0 0 10px #f59e0b;
-            border-color: #d97706 !important;
-            transform: scale(1.1);
+            height: 18px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 4px;
+            transition: all 0.3s ease;
         }
 
-        /* Log Streaming Layout */
+        .matrix-node.active-pulse {
+            background: var(--amber-accent) !important;
+            box-shadow: 0 0 14px var(--amber-accent);
+            border-color: #ffffff !important;
+            transform: scale(1.15);
+        }
+
+        /* Log List Stream */
         .log-list {
-            max-height: 280px;
+            max-height: 270px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        .log-list::-webkit-scrollbar { width: 6px; }
-        .log-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .log-list::-webkit-scrollbar { width: 4px; }
+        .log-list::-webkit-scrollbar-thumb { background: var(--surface-elevated); border-radius: 4px; }
 
         .log-card {
-            background: #ffffff;
-            border: 1px solid var(--ur-border);
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-subtle);
             padding: 14px;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-            border-left: 4px solid var(--red-accent);
+            border-radius: 10px;
+            border-left: 3px solid var(--red-accent);
+            transition: all 0.2s ease;
+        }
+
+        .log-card:hover {
+            border-color: rgba(244, 63, 94, 0.4);
+            background: var(--surface-elevated);
         }
 
         .log-row-top {
@@ -207,7 +243,6 @@
         .log-title {
             font-size: 13px;
             font-weight: 600;
-            color: #0f172a;
         }
 
         .log-time {
@@ -220,58 +255,65 @@
             align-self: flex-start;
             font-size: 11px;
             font-family: var(--font-mono);
-            padding: 3px 8px;
-            background: var(--blue-bg);
-            color: var(--blue-accent);
-            border-radius: 4px;
+            padding: 3px 10px;
+            background: var(--cyan-glow);
+            color: var(--cyan-accent);
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
             font-weight: 600;
         }
 
-        /* Action Controls */
+        /* Controls & Buttons */
         .control-row {
             margin-top: 24px;
         }
 
         .btn {
-            padding: 12px 16px;
-            font-size: 13px;
-            font-weight: 600;
+            padding: 12px 18px;
+            font-size: 12px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
             cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.15s ease;
+            border-radius: 8px;
+            transition: all 0.2s ease;
             border: none;
         }
 
         .btn-secondary {
-            background: #f1f5f9;
-            border: 1px solid var(--ur-border);
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-subtle);
             color: var(--text-main);
         }
+
         .btn-secondary:hover {
-            background: #e2e8f0;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-glow);
         }
 
         .btn-danger {
-            background: var(--red-accent);
-            color: #fff;
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(225, 29, 72, 0.3));
+            border: 1px solid var(--red-accent);
+            color: var(--red-accent);
             width: 100%;
-            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
-        }
-        .btn-danger:hover {
-            background: #dc2626;
+            box-shadow: 0 4px 15px var(--red-glow);
         }
 
-        /* Auth Screen Design */
+        .btn-danger:hover {
+            background: var(--red-accent);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.6);
+        }
+
+        /* Auth Panel */
         .auth-container {
             padding: 36px;
             max-width: 420px;
             width: 100%;
-            background: var(--ur-card);
-            border: 1px solid var(--ur-border);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            background: var(--surface-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
         }
 
         .input-wrapper {
@@ -280,28 +322,30 @@
 
         .input-wrapper label {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
             color: var(--text-muted);
             margin-bottom: 6px;
             font-weight: 700;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
         }
 
         .input-wrapper input {
             width: 100%;
-            padding: 12px;
-            background: #f8fafc;
-            border: 1px solid var(--ur-border);
-            border-radius: 6px;
+            padding: 12px 14px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
             color: var(--text-main);
             font-size: 14px;
+            transition: all 0.2s ease;
         }
+
         .input-wrapper input:focus {
             outline: none;
-            border-color: var(--blue-accent);
-            background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+            border-color: var(--cyan-accent);
+            box-shadow: 0 0 12px var(--cyan-glow);
+            background: var(--surface-elevated);
         }
 
         .hidden { display: none !important; }
@@ -310,7 +354,7 @@
 <body>
 
     <div id="login-form" class="auth-container">
-        <h1 style="font-size: 15px; color: #0f172a; margin-bottom: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px;">🔒 TAFTALIDZE // SECURE LOGIN</h1>
+        <h1 style="font-size: 15px; color: var(--text-main); margin-bottom: 24px; font-weight: 700; letter-spacing: 1px;">🔐 CONSOLE ACCESS LOCK</h1>
         <div class="input-wrapper">
             <label>Operator Node Email</label>
             <input type="email" id="email" placeholder="your@e-mail.com">
@@ -319,34 +363,34 @@
             <label>Cryptographic Phrase</label>
             <input type="password" id="password" placeholder="••••••••">
         </div>
-        <button id="auth-submit-btn" class="btn btn-secondary" style="width: 100%; background: #0f172a; color: #fff; border: none;">Initialize System Validation</button>
+        <button id="auth-submit-btn" class="btn btn-secondary" style="width: 100%; border-color: var(--cyan-accent); color: var(--cyan-accent);">Initialize System Validation</button>
     </div>
 
     <div id="dashboard" class="dashboard-wrapper hidden">
         <div class="system-bar">
-            <h1>🟢 Taftalidze Security Hub</h1>
-            <div class="latency-indicator">● Operational // Live Sync</div>
+            <h1>TAFTA HQ // SECURITY MONITOR</h1>
+            <div class="latency-indicator">LIVE SYNC</div>
         </div>
 
         <div class="main-content">
             <div class="stats-grid">
-                <div class="stat-box alerting">
+                <div class="stat-box">
                     <div class="stat-label">Total Alarms</div>
                     <div class="stat-value" style="color: var(--red-accent);" id="total-alarms-count">0</div>
                 </div>
-                <div class="stat-box healthy">
+                <div class="stat-box">
                     <div class="stat-label">Uptime Metric</div>
                     <div class="stat-value" style="color: var(--green-accent);" id="uptime-metric-value">0.0%</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Sys Kernel</div>
-                    <div class="stat-value" style="color: var(--blue-accent);">v2.9</div>
+                    <div class="stat-value" style="color: var(--cyan-accent);">v2.9</div>
                 </div>
             </div>
 
             <div class="heatmap-panel">
                 <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <div><span style="color: var(--green-accent);">■</span> Spatial Intrusion Density Map</div>
+                    <div><span style="color: var(--cyan-accent);">■</span> Spatial Intrusion Density Map</div>
                     <div style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">[0cm ---> 140cm]</div>
                 </div>
                 <div class="matrix-grid" id="spatial-matrix-grid">
@@ -365,7 +409,7 @@
 
             <div class="panel-title" style="margin-left: 2px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <span>📋 Live Telemetry Logs</span>
-                <button id="audio-toggle-btn" class="btn btn-secondary" style="padding: 4px 10px; font-size: 10px; border-radius: 4px;">
+                <button id="audio-toggle-btn" class="btn btn-secondary" style="padding: 4px 10px; font-size: 10px;">
                     🔈 Audio Disabled
                 </button>
             </div>
@@ -486,14 +530,9 @@
             
             uptimeElement.innerText = finalUptimeStr;
 
-            const parentBox = uptimeElement.closest('.stat-box');
             if (uptimePercentage < 85) {
-                parentBox.classList.remove('healthy');
-                parentBox.classList.add('alerting');
                 uptimeElement.style.color = "var(--red-accent)";
             } else {
-                parentBox.classList.remove('alerting');
-                parentBox.classList.add('healthy');
                 uptimeElement.style.color = "var(--green-accent)";
             }
         }
@@ -538,13 +577,13 @@
                 btn.innerHTML = "🔊 Audio Active";
                 btn.style.borderColor = "var(--green-accent)";
                 btn.style.color = "var(--green-accent)";
-                btn.style.background = "var(--green-bg)";
+                btn.style.background = "var(--green-glow)";
             } else {
                 isAudioMuted = true;
                 btn.innerHTML = "🔈 Audio Disabled";
-                btn.style.borderColor = "var(--ur-border)";
+                btn.style.borderColor = "var(--border-subtle)";
                 btn.style.color = "var(--text-main)";
-                btn.style.background = "#f1f5f9";
+                btn.style.background = "var(--surface-elevated)";
             }
         }
 
